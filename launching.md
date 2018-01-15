@@ -423,9 +423,9 @@ _RCTBridge.mm_
 
 This part is quite self explanatory - we are going to execute the JS code. Three things happened here:
 
-* Initialize bridge
-* Load JS source
-* Execute JS source
+* [ ] Initialize bridge
+* [ ] Load JS source
+* [ ] Execute JS source
 
 _Initialize bridge - RCTCxxBridge.mm_
 
@@ -519,9 +519,17 @@ NativeToJsBridge::NativeToJsBridge(
     , m_executorMessageQueueThread(std::move(jsQueue)) {}
 ```
 
-In `NativeToJSBridge`, we finally created our Javascript executor. Also, there is a `JsToNativeBridge` created in the construct list. 
+In `NativeToJSBridge`, we finally created our Javascript executor. Also, there is a `JsToNativeBridge` created in the construct list.
 
-`NativeToJSBridge` is the one who will call Javascript functions using 'JS executor'. And `JsToNativeBridge` will handle native function calls from Javascript.
+`NativeToJSBridge` is the one who will call Javascript functions using 'JS executor'. And `JsToNativeBridge` will handle native function calls from Javascript. We will discuss more about this two bridges in other chapters. Now we must focus on the remaining initialization code of ReactNative.
 
-At this point, all our bridges and executors are ready to go. So let's back to where we start: `[RCTCxxBridge start]`.
+At this point, all our bridges and executors are ready to go. So let's back to where we start: `[RCTCxxBridge start]`. As we listed  before, three things happened in this method -
+
+* [x] Initialize bridge
+
+* [ ] Load JS source
+
+* [ ] Execute JS source
+
+
 
