@@ -531,5 +531,38 @@ At this point, all our bridges and executors are ready to go. So let's back to w
 
 * [ ] Execute JS source
 
+_RCTCxxBridge.mm_
+
+```objectivec
+- (void)loadSource:(RCTSourceLoadBlock)_onSourceLoad onProgress:(RCTSourceLoadProgressBlock)onProgress
+{  
+  //...Notification & performance logger setup
+  RCTSourceLoadBlock onSourceLoad = ^(NSError *error, RCTSource *source) {
+    //...Performance logger
+    NSDictionary *userInfo = source ? @{ RCTBridgeDidDownloadScriptNotificationSourceKey: source } : nil;
+    [center postNotificationName:RCTBridgeDidDownloadScriptNotification object:self->_parentBridge userInfo:userInfo];
+    _onSourceLoad(error, source);
+  };
+
+  if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:onProgress:onComplete:)]) {
+    [self.delegate loadSourceForBridge:_parentBridge onProgress:onProgress onComplete:onSourceLoad];
+  } else if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:withBlock:)]) {
+    [self.delegate loadSourceForBridge:_parentBridge withBlock:onSourceLoad];
+  } else if (!self.bundleURL) {
+    NSError *error = RCTErrorWithMessage(@"No bundle URL present.\n\nMake sure you're running a packager " \
+                                         "server or have included a .jsbundle file in your application bundle.");
+    onSourceLoad(error, nil);
+  } else {
+    [RCTJavaScriptLoader loadBundleAtURL:self.bundleURL onProgress:onProgress onComplete:^(NSError *error, RCTSource *source) {
+      if (error) {
+        RCTLogError(@"Failed to load bundle(%@) with error:(%@ %@)", self.bundleURL, error.localizedDescription, error.localizedFailureReason);
+        return;
+      }
+      onSourceLoad(error, source);
+    }];
+  }
+}
+```
+
 
 
