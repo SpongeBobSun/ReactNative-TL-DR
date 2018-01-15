@@ -1,6 +1,6 @@
 # Summary
 
 * [Introduction](README.md)
-* [First Chapter](chapter1.md)
-* [Launching](launching.md)
+* [How does it start](launching.md)
+* [What is a native module](what-is-native-module.md)
 
