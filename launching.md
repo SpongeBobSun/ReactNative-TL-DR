@@ -381,7 +381,7 @@ _RCTCxxBridge.mm_
 }
 ```
 
-As we can see from the above code block, we created and a 'reactInstance'. But as the comment says it doesn't perform anything for now. Then we are going to create a JS executor to executing JS code. There is a `self.executorClass` check, which will always be null if you are not running with `Debug JS Remotely` switch on. Because currently only debug mode will set `executorClass` \(RCTWebSocketExecutor\). Also, the delegate check indicated we could use different 'js executor factory\` per JSBridge.
+As we can see from the above code block, we created and a 'reactInstance'. But as the comment says it doesn't perform anything for now. Then we are going to create a JS executor to executing JS code. There is a `self.executorClass` check, which will always be null if you are not running with `Debug JS Remotely` switch on. Because currently only debug mode will set `executorClass` \(RCTWebSocketExecutor\). Also, the "delegate check" indicated we could use different "js executor factory" per JSBridge.
 
 _RCTBridge.mm_
 
@@ -504,4 +504,24 @@ void Instance::callJSFunction(...params) {
 ```
 
 Basically this function created a `NativeToJsBridge` on JS thread. From the rest part of `Instance.cpp` we can conclude that `ReactInstance` is bridge all function calls to `NativeToJSBridge`.
+
+_NativeToJSBridge.cpp_
+
+```cpp
+NativeToJsBridge::NativeToJsBridge(
+    JSExecutorFactory* jsExecutorFactory,
+    std::shared_ptr<ModuleRegistry> registry,
+    std::shared_ptr<MessageQueueThread> jsQueue,
+    std::shared_ptr<InstanceCallback> callback)
+    : m_destroyed(std::make_shared<bool>(false))
+    , m_delegate(std::make_shared<JsToNativeBridge>(registry, callback))
+    , m_executor(jsExecutorFactory->createJSExecutor(m_delegate, jsQueue))
+    , m_executorMessageQueueThread(std::move(jsQueue)) {}
+```
+
+In `NativeToJSBridge`, we finally created our Javascript executor. Also, there is a `JsToNativeBridge` created in the construct list. 
+
+`NativeToJSBridge` is the one who will call Javascript functions using 'JS executor'. And `JsToNativeBridge` will handle native function calls from Javascript.
+
+At this point, all our bridges and executors are ready to go. So let's back to where we start: `[RCTCxxBridge start]`.
 
