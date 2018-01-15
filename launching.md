@@ -427,6 +427,10 @@ This part is quite self explanatory - we are going to execute the JS code. Three
 * [ ] Load JS source
 * [ ] Execute JS source
 
+Let's go through them one by one.
+
+#### Initialize Bridge
+
 _Initialize bridge - RCTCxxBridge.mm_
 
 ```objectivec
@@ -531,9 +535,28 @@ At this point, all our bridges and executors are ready to go. So let's back to w
 
 * [ ] Execute JS source
 
+Now we have initialized our bridges, let's load some JS source.
+
+#### Load JS source
+
 _RCTCxxBridge.mm_
 
 ```objectivec
+-(void)start {
+  //...
+  // Load the source asynchronously, then store it for later execution.
+  dispatch_group_enter(prepareBridge);
+  __block NSData *sourceCode;
+  [self loadSource:^(NSError *error, RCTSource *source) {
+    //...Error check
+    sourceCode = source.data;
+    dispatch_group_leave(prepareBridge);
+  } onProgress:^(RCTLoadingProgress *progressData) {
+    //...debug code to display loading progress on top of the screen.
+  }];
+  //...execute Javascript source code
+}
+
 - (void)loadSource:(RCTSourceLoadBlock)_onSourceLoad onProgress:(RCTSourceLoadProgressBlock)onProgress
 {  
   //...Notification & performance logger setup
@@ -549,20 +572,18 @@ _RCTCxxBridge.mm_
   } else if ([self.delegate respondsToSelector:@selector(loadSourceForBridge:withBlock:)]) {
     [self.delegate loadSourceForBridge:_parentBridge withBlock:onSourceLoad];
   } else if (!self.bundleURL) {
-    NSError *error = RCTErrorWithMessage(@"No bundle URL present.\n\nMake sure you're running a packager " \
-                                         "server or have included a .jsbundle file in your application bundle.");
+    NSError *error = //...NSError with error message
     onSourceLoad(error, nil);
   } else {
     [RCTJavaScriptLoader loadBundleAtURL:self.bundleURL onProgress:onProgress onComplete:^(NSError *error, RCTSource *source) {
-      if (error) {
-        RCTLogError(@"Failed to load bundle(%@) with error:(%@ %@)", self.bundleURL, error.localizedDescription, error.localizedFailureReason);
-        return;
-      }
+      //...error check
       onSourceLoad(error, source);
     }];
   }
 }
 ```
 
+So the actual loading part is handled to `RCTJavaScriptLoader`. 
 
+_RCTJavaScriptLoader.mm_
 
