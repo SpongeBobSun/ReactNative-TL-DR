@@ -1,6 +1,4 @@
-This doc will focus on iOS side and based on react-native 0.51.0
-
-Create a simple react-native app. Open `AppDelegate` and this is where we start.
+First create a simple react-native app. Open `AppDelegate` and this is where we start.
 
 _AppDelegate.m_
 
