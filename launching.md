@@ -12,7 +12,8 @@ _AppDelegate.m_
 #else
   jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
-  /*
+  /**
+   * Bob's note:
    * Module name is the app name here.
    */
   RCTRootView *rootView = [[RCTRootView alloc] initWithBundleURL:jsCodeLocation
