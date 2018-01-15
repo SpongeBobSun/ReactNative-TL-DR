@@ -583,7 +583,7 @@ _RCTCxxBridge.mm_
 }
 ```
 
-So the actual loading part is handled to `RCTJavaScriptLoader`. 
+As we mentioned before, ReactNative allow us to use different "JSBridges" for different "RCTRootViews".  So the actual loading part is handled to `RCTJavaScriptLoader`.
 
 _RCTJavaScriptLoader.mm_
 
