@@ -1,4 +1,4 @@
 # ReactNative - under the hood
 
-This file file serves as your book's preface, a great place to describe your book's content and ideas.
+This doc will focus on iOS side and based on react-native 0.51.0
 
