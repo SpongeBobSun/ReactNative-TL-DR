@@ -757,7 +757,7 @@ _jschelpers/JavaScriptCore.h_
 #define JSC_JSEvaluateScript(...) __jsc_wrapper(JSEvaluateScript, __VA_ARGS__)
 ```
 
-Now we have finished all three tasks in our `RCTCxxBridge start` checklist - 
+Now we have finished all three tasks in our `RCTCxxBridge start` checklist -
 
 * [x] Initialize bridge
 
