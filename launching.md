@@ -765,15 +765,66 @@ Now we have finished all three tasks in our `RCTCxxBridge start` checklist -
 
 * [x] Execute JS source
 
-That means all our bridges \(RCTBridge, RCTCxxBridge\) are up and running. So let's look back to `RCTRootView`, which is the root caller of `[RCTBridge setup]`.
-
-In `RCTRootView` we've subscribed some events which will be fired after JavaScript code is loaded.
+That means all our bridges \(RCTBridge, RCTCxxBridge\) are up and running. So let's look back to `RCTRootView`, which is the root caller of `[RCTBridge init...]`.
 
 _RCTRootView.m_
 
+```objectivec
+- (instancetype)initWithBridge:(RCTBridge *)bridge
+                    moduleName:(NSString *)moduleName
+             initialProperties:(NSDictionary *)initialProperties
+{
+    //...code removed to make it more clear for reading
+    
+    [[NSNotificationCenter defaultCenter] addObserver:self
+                                         selector:@selector(javaScriptDidLoad:)
+                                             name:RCTJavaScriptDidLoadNotification
+                                           object:_bridge];
+
+    //...code removed to make it more clear for reading
+}
+
+- (void)javaScriptDidLoad:(NSNotification *)notification
+{
+  RCTAssertMainQueue();
+
+  RCTBridge *bridge = notification.userInfo[@"bridge"];
+  if (bridge != _contentView.bridge) {
+    [self bundleFinishedLoading:bridge];
+  }
+}
+
+- (void)bundleFinishedLoading:(RCTBridge *)bridge
+{
+  //...check nil
+
+  [_contentView removeFromSuperview];
+  _contentView = [[RCTRootContentView alloc] initWithFrame:self.bounds
+                                                    bridge:bridge
+                                                  reactTag:self.reactTag
+                                            sizeFlexiblity:_sizeFlexibility];
+  [self runApplication:bridge];
+
+  //...UI setup (sizes & colors)
+}
+
+- (void)runApplication:(RCTBridge *)bridge
+{
+  NSString *moduleName = _moduleName ?: @"";
+  NSDictionary *appParameters = @{
+    @"rootTag": _contentView.reactTag,
+    @"initialProps": _appProperties ?: @{},
+  };
+
+  RCTLogInfo(@"Running application %@ (%@)", moduleName, appParameters);
+  [bridge enqueueJSCall:@"AppRegistry"
+                 method:@"runApplication"
+                   args:@[moduleName, appParameters]
+             completion:NULL];
+}
 ```
 
-```
+This leads us back to where we start. We've dug into `RCTBridge` to see how it's initialized and keep our `RCTRootView` waiting for the 'JavaScriptDidLoad' notification. After our JavaScript code is loaded, it will call `AppRegistry.runApplication` in JavaScript through our `RCTBridge / RCTCxxBridge`.
 
-
+We will talk about how ReactNative is initialized in next chapter.
 
