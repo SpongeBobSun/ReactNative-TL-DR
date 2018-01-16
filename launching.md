@@ -714,16 +714,23 @@ void Instance::loadApplication(std::unique_ptr<RAMBundleRegistry> bundleRegistry
 
 _NativeToJsBridge.cpp_
 
-```
-void NativeToJsBridge::loadApplicationSync(
+```cpp
+void NativeToJsBridge::loadApplication(
     std::unique_ptr<RAMBundleRegistry> bundleRegistry,
     std::unique_ptr<const JSBigString> startupScript,
     std::string startupScriptSourceURL) {
-  if (bundleRegistry) {
-    m_executor->setBundleRegistry(std::move(bundleRegistry));
-  }
-  m_executor->loadApplicationScript(std::move(startupScript),
-                                        std::move(startupScriptSourceURL));
+  runOnExecutorQueue(
+      [bundleRegistryWrap=folly::makeMoveWrapper(std::move(bundleRegistry)),
+       startupScript=folly::makeMoveWrapper(std::move(startupScript)),
+       startupScriptSourceURL=std::move(startupScriptSourceURL)]
+        (JSExecutor* executor) mutable {
+    auto bundleRegistry = bundleRegistryWrap.move();
+    if (bundleRegistry) {
+      executor->setBundleRegistry(std::move(bundleRegistry));
+    }
+    executor->loadApplicationScript(std::move(*startupScript),
+                                    std::move(startupScriptSourceURL));
+  });
 }
 ```
 
@@ -775,7 +782,7 @@ _RCTRootView.m_
              initialProperties:(NSDictionary *)initialProperties
 {
     //...code removed to make it more clear for reading
-    
+
     [[NSNotificationCenter defaultCenter] addObserver:self
                                          selector:@selector(javaScriptDidLoad:)
                                              name:RCTJavaScriptDidLoadNotification
@@ -826,5 +833,5 @@ _RCTRootView.m_
 
 This leads us back to where we start. We've dug into `RCTBridge` to see how it's initialized and keep our `RCTRootView` waiting for the 'JavaScriptDidLoad' notification. After our JavaScript code is loaded, it will call `AppRegistry.runApplication` in JavaScript through our `RCTBridge / RCTCxxBridge`.
 
-We will talk about how ReactNative is initialized in next chapter.
+We will talk about how ReactNative is initialized in JavaScript next chapter.
 
