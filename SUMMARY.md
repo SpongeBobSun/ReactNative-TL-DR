@@ -1,7 +1,7 @@
 # Summary
 
 * [Introduction](README.md)
-* Before we start
+* [Before we start](before-we-start.md)
 * [How does ReactNative start in native](launching.md)
 * [How does it start in Javascript](how-does-it-start-in-javascript.md)
 * [What is a native module](what-is-native-module.md)
