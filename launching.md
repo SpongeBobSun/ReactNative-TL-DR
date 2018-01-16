@@ -381,7 +381,7 @@ _RCTCxxBridge.mm_
 }
 ```
 
-As we can see from the above code block, we created and a 'reactInstance'. But as the comment says it doesn't perform anything for now. Then we are going to create a JS executor to executing JS code. There is a `self.executorClass` check, which will always be null if you are not running with `Debug JS Remotely` switch on. Because currently only debug mode will set `executorClass` \(RCTWebSocketExecutor\). Also, the "delegate check" indicated we could use different "js executor factory" per JSBridge. Since we currently don't have any delegate, so the Javascript executor will be a **`JSCExecutorFactory`** instance, which indicated our executor will be **`JSCExecutor`** . This is rather a important thing to notice because there are several classes implemented this interface in react.
+As we can see from the above code block, we created and a 'reactInstance'. But as the comment says it doesn't perform anything for now. Then we are going to create a JS executor to executing JS code. There is a `self.executorClass` check, which will always be null if you are not running with `Debug JS Remotely` switch on. Because currently only debug mode will set `executorClass` \(RCTWebSocketExecutor\). Also, the "delegate check" indicated we could use different "js executor factory" per JSBridge. Since we currently don't have any delegate, so the Javascript executor will be a `JSCExecutorFactory` instance, which indicated our executor will be `JSCExecutor` . This is rather a important thing to notice because there are several classes implemented this interface in react.
 
 _RCTBridge.mm_
 
@@ -603,7 +603,7 @@ _RCTCxxBridge.mm_
 -(void)start {
     //...initialize bridges
     //...load js source code
-    
+
     // Wait for both the modules and source code to have finished loading
   dispatch_group_notify(prepareBridge, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
     RCTCxxBridge *strongSelf = weakSelf;
@@ -699,5 +699,27 @@ void NativeToJsBridge::loadApplicationSync(
 }
 ```
 
-Finally the `JSCExecutor` join the party. This file is located in `ReactCommon`, which means it's shared between both iOS and Android platform.
+Finally the `JSCExecutor` join the party. This file is located in `ReactCommon`, which means it's shared between both iOS and Android platform. 
+
+_JSExecutor.cpp_
+
+```cpp
+void JSCExecutor::loadApplicationScript(std::unique_ptr<const JSBigString> script, 
+    std::string sourceURL) {
+    //...Code removed to make it more clear for reading
+    evaluateScript(m_context, jsScript, jsSourceURL);
+    //...Code removed to make it more clear for reading
+}
+
+JSValueRef evaluateScript(JSContextRef context, JSStringRef script, JSStringRef sourceURL) {
+  JSValueRef exn, result;
+  result = JSC_JSEvaluateScript(context, script, NULL, sourceURL, 0, &exn);
+  if (result == nullptr) {
+    throw JSException(context, exn, sourceURL);
+  }
+  return result;
+}
+```
+
+
 
