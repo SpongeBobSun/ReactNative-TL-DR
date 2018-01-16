@@ -314,7 +314,7 @@ After the js thread is created, we created a dispatch group. Then we asynchronou
 * _**Where are those 'ModuleClasses' coming from ?**_
 * _**How does it get inited?**_
 
-Let's hold those questions for now because now we are focusing how does this 'bridge' thing get running. But long story short - this is the `NativeModule` part and we will definitely talk about it later.
+Let's hold those questions for now because now we are focusing how does this 'bridge' thing get running. But long story short - this is the `NativeModule` chapter and we will definitely talk about it later.
 
 _RCTCxxBridge.mm_
 
@@ -381,7 +381,7 @@ _RCTCxxBridge.mm_
 }
 ```
 
-As we can see from the above code block, we created and a 'reactInstance'. But as the comment says it doesn't perform anything for now. Then we are going to create a JS executor to executing JS code. There is a `self.executorClass` check, which will always be null if you are not running with `Debug JS Remotely` switch on. Because currently only debug mode will set `executorClass` \(RCTWebSocketExecutor\). Also, the "delegate check" indicated we could use different "js executor factory" per JSBridge.
+As we can see from the above code block, we created and a 'reactInstance'. But as the comment says it doesn't perform anything for now. Then we are going to create a JS executor to executing JS code. There is a `self.executorClass` check, which will always be null if you are not running with `Debug JS Remotely` switch on. Because currently only debug mode will set `executorClass` \(RCTWebSocketExecutor\). Also, the "delegate check" indicated we could use different "js executor factory" per JSBridge. Since we currently don't have any delegate, so the Javascript executor will be a **`JSCExecutorFactory`** instance, which indicated our executor will be **`JSCExecutor`** . This is rather a important thing to notice because there are several classes implemented this interface in react.
 
 _RCTBridge.mm_
 
@@ -595,7 +595,109 @@ So the only item leaves on our checklist is execute JS source code.
 
 #### Execute JS source
 
+Now let's focus on the Javascript execute part.
 
+_RCTCxxBridge.mm_
 
+```objectivec
+-(void)start {
+    //...initialize bridges
+    //...load js source code
+    
+    // Wait for both the modules and source code to have finished loading
+  dispatch_group_notify(prepareBridge, dispatch_get_global_queue(QOS_CLASS_USER_INTERACTIVE, 0), ^{
+    RCTCxxBridge *strongSelf = weakSelf;
+    if (sourceCode && strongSelf.loading) {
+      [strongSelf executeSourceCode:sourceCode sync:NO];
+    }
+  });
+}
 
+- (void)executeSourceCode:(NSData *)sourceCode sync:(BOOL)sync {
+
+  dispatch_block_t completion = //...callback removed to make our code more clear for reading
+
+  if (sync) {
+    [self executeApplicationScriptSync:sourceCode url:self.bundleURL];
+    completion();
+  } else {
+    [self enqueueApplicationScript:sourceCode url:self.bundleURL onComplete:completion];
+  }
+  //...Debug code
+}
+
+- (void)enqueueApplicationScript:(NSData *)script
+                             url:(NSURL *)url
+                      onComplete:(dispatch_block_t)onComplete
+{
+  [self executeApplicationScript:script url:url async:YES];
+
+  // Assumes that onComplete can be called when the next block on the JS thread is scheduled
+  if (onComplete) {
+    RCTAssert(_jsMessageThread != nullptr, @"Cannot invoke completion without jsMessageThread");
+    _jsMessageThread->runOnQueue(onComplete);
+  }
+}
+
+- (void)executeApplicationScriptSync:(NSData *)script url:(NSURL *)url
+{
+  [self executeApplicationScript:script url:url async:NO];
+}
+
+- (void)executeApplicationScript:(NSData *)script
+                             url:(NSURL *)url
+                           async:(BOOL)async
+{
+  [self _tryAndHandleError:^{
+    NSString *sourceUrlStr = deriveSourceURL(url);
+    if (isRAMBundle(script)) {
+      //...code removed to make it more clear for reading
+    } else if (self->_reactInstance) {
+      self->_reactInstance->loadScriptFromString(std::make_unique<NSDataBigString>(script),
+                                                 sourceUrlStr.UTF8String, !async);
+    } else {
+      //...code removed to make it more clear for reading
+    }
+  }];
+}
+```
+
+_Instance.cpp_
+
+```cpp
+void Instance::loadScriptFromString(std::unique_ptr<const JSBigString> string,
+                                    std::string sourceURL,
+                                    bool loadSynchronously) {
+  if (loadSynchronously) {
+    loadApplicationSync(nullptr, std::move(string), std::move(sourceURL));
+  } else {
+    loadApplication(nullptr, std::move(string), std::move(sourceURL));
+  }
+}
+
+void Instance::loadApplication(std::unique_ptr<RAMBundleRegistry> bundleRegistry,
+                               std::unique_ptr<const JSBigString> string,
+                               std::string sourceURL) {
+  callback_->incrementPendingJSCalls();
+  nativeToJsBridge_->loadApplication(std::move(bundleRegistry), std::move(string),
+                                     std::move(sourceURL));
+}
+```
+
+_NativeToJsBridge.cpp_
+
+```
+void NativeToJsBridge::loadApplicationSync(
+    std::unique_ptr<RAMBundleRegistry> bundleRegistry,
+    std::unique_ptr<const JSBigString> startupScript,
+    std::string startupScriptSourceURL) {
+  if (bundleRegistry) {
+    m_executor->setBundleRegistry(std::move(bundleRegistry));
+  }
+  m_executor->loadApplicationScript(std::move(startupScript),
+                                        std::move(startupScriptSourceURL));
+}
+```
+
+Finally the `JSCExecutor` join the party. This file is located in `ReactCommon`, which means it's shared between both iOS and Android platform.
 
