@@ -1,4 +1,4 @@
-First create a simple react-native app. Open `AppDelegate` and this is where we start.
+First create a simple react-native app using `react-native init` command. Open `AppDelegate` and this is where we start.
 
 _AppDelegate.m_
 
