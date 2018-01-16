@@ -585,3 +585,17 @@ _RCTCxxBridge.mm_
 
 As we mentioned before, ReactNative allow us to use different "JSBridges" for different "RCTRootViews".  So the actual loading part is handled to `RCTJavaScriptLoader`. The loading process is pretty simple, so I'll not paste any code. Basically the loader will determine where it should load the source code - disk or url. Then it will read it to a `NSData` and wrap it to a `RCTSource` instance.
 
+So the only item leaves on our checklist is execute JS source code.
+
+* [x] Initialize bridge
+
+* [x] Load JS source
+
+* [ ] Execute JS source
+
+#### Execute JS source
+
+
+
+
+
