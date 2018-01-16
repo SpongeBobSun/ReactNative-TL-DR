@@ -1,3 +1,11 @@
+## TL;DR
+
+This chapter will talk about the initialize part of ReactNative. We will dig in the source code from `AppDelegate.m` and go through functions, classes step by step. Contents in this chapter can be represented by below figure.
+
+![](/assets/RN start in native.png)
+
+## Since you want to read it anyway...
+
 First create a simple react-native app using `react-native init` command. Open `AppDelegate` and this is where we start.
 
 _AppDelegate.m_
