@@ -699,7 +699,7 @@ void NativeToJsBridge::loadApplicationSync(
 }
 ```
 
-Finally the `JSCExecutor` join the party. This file is located in `ReactCommon`, which means it's shared between both iOS and Android platform. 
+Finally the `JSCExecutor` join the party. This file is located in `ReactCommon`, which means it's shared between both iOS and Android platform.
 
 _JSExecutor.cpp_
 
@@ -719,6 +719,14 @@ JSValueRef evaluateScript(JSContextRef context, JSStringRef script, JSStringRef 
   }
   return result;
 }
+```
+
+The key part here is `JSC_JSEvaluateScript`, which is a macro defined in `jschelpers/JavaScriptCore.h`. This macro is simply bridge the function call to Apple's `JavaScriptCore`.
+
+_jschelpers/JavaScriptCore.h_
+
+```
+#define JSC_JSEvaluateScript(...) __jsc_wrapper(JSEvaluateScript, __VA_ARGS__)
 ```
 
 
