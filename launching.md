@@ -85,7 +85,13 @@ _RCTRootView.m_
 ```objectivec
 - (void)bundleFinishedLoading:(RCTBridge *)bridge
 {
-  //...Null check
+  /**
+   * Bob's note:
+   * Bridge maybe invalid and will call this method again when JavaScript code is loaded in 'bridge'
+   */
+  if (!bridge.valid) {
+    return;
+  }
 
   [_contentView removeFromSuperview];
   _contentView = [[RCTRootContentView alloc] initWithFrame:self.bounds
@@ -112,7 +118,9 @@ _RCTRootView.m_
 }
 ```
 
-Here goes our first Javascript call in `runApplication`. But before we get any further in Javascript code, we should first look into the `RCTBridge` class to see how the Javascript code is executed.
+Here goes our first Javascript call in `runApplication`. But in current context \( App code launch\), our bridge may not be ready or valid to be accurate. That's means our first `bundleFinishedLoad` call will return immediately. `RCTRootView` will waiting for `RCTJavaScriptDidLoadNotification` and call this method again with a valid bridge.
+
+So before we get any further in Javascript code, we should first look into the `RCTBridge` class to see how the Javascript code is executed and keep our `RCTRootView` waiting.
 
 First we are going to look into the `RCTBridge`'s constructor, which is called on the init function of `RCTRootView` .
 
@@ -383,7 +391,7 @@ _RCTCxxBridge.mm_
 
 As we can see from the above code block, we created and a 'reactInstance'. But as the comment says it doesn't perform anything for now. Then we are going to create a JS executor to executing JS code. There is a `self.executorClass` check, which will always be null if you are not running with `Debug JS Remotely` switch on. Because currently only debug mode will set `executorClass` \(RCTWebSocketExecutor\). Also, the "delegate check" indicated we could use different "js executor factory" per JSBridge. Since we currently don't have any delegate, so the Javascript executor will be a `JSCExecutorFactory` instance, which indicated our executor will be `JSCExecutor` . This is rather a important thing to notice because there are several classes implemented this interface in react.
 
-_RCTBridge.mm_
+_RCTCxxBridge.mm_
 
 ```objectivec
 -(void)start {
@@ -615,7 +623,20 @@ _RCTCxxBridge.mm_
 
 - (void)executeSourceCode:(NSData *)sourceCode sync:(BOOL)sync {
 
-  dispatch_block_t completion = //...callback removed to make our code more clear for reading
+  /**
+   * Bob's note:
+   * This callback will be called after JavaScript code is loaded to JavaScriptCode.
+   * Which will fire "RCTJavaScriptDidLoadNotification" notification.
+   */
+  dispatch_block_t completion = ^{
+    //...code removed to make it more clear for reading.
+    dispatch_async(dispatch_get_main_queue(), ^{
+      [[NSNotificationCenter defaultCenter]
+       postNotificationName:RCTJavaScriptDidLoadNotification
+       object:self->_parentBridge userInfo:@{@"bridge": self}];
+      //...code removed to make it more clear for reading.
+    });
+  };
 
   if (sync) {
     [self executeApplicationScriptSync:sourceCode url:self.bundleURL];
@@ -635,6 +656,11 @@ _RCTCxxBridge.mm_
   // Assumes that onComplete can be called when the next block on the JS thread is scheduled
   if (onComplete) {
     RCTAssert(_jsMessageThread != nullptr, @"Cannot invoke completion without jsMessageThread");
+    /**
+     * Bob's note:
+     * The JavaScript execution call will be ran on the same queue.
+     * So when JavaScriptCore is done for our JavaScript code, `onComplete` will be executed.
+     */
     _jsMessageThread->runOnQueue(onComplete);
   }
 }
@@ -661,6 +687,8 @@ _RCTCxxBridge.mm_
   }];
 }
 ```
+
+Notice we have a `onComplete` callback in above code block. This call back will send a notification that indicate our JavaScript code is loaded in `JavaScriptCore`. And `RCTRootView` will listen for this notification, which we will talk about later.
 
 _Instance.cpp_
 
@@ -727,6 +755,24 @@ _jschelpers/JavaScriptCore.h_
 
 ```
 #define JSC_JSEvaluateScript(...) __jsc_wrapper(JSEvaluateScript, __VA_ARGS__)
+```
+
+Now we have finished all three tasks in our `RCTCxxBridge start` checklist - 
+
+* [x] Initialize bridge
+
+* [x] Load JS source
+
+* [x] Execute JS source
+
+That means all our bridges \(RCTBridge, RCTCxxBridge\) are up and running. So let's look back to `RCTRootView`, which is the root caller of `[RCTBridge setup]`.
+
+In `RCTRootView` we've subscribed some events which will be fired after JavaScript code is loaded.
+
+_RCTRootView.m_
+
+```
+
 ```
 
 
