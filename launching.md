@@ -125,7 +125,7 @@ Here goes our first Javascript call in `runApplication`. But in current context 
 
 So before we get any further in Javascript code, we should first look into the `RCTBridge` class to see how the Javascript code is executed and keep our `RCTRootView` waiting.
 
-First we are going to look into the `RCTBridge`'s constructor, which is called on the init function of `RCTRootView` .
+First we are going to look into the `RCTBridge`'s constructor, which is called in the init function of `RCTRootView` .
 
 Long story short - after two customized initialize methods, RCTBridge will find the true bridge class and start it. ![](/assets/RCTBRidge_init_and_start.png)
 
@@ -325,7 +325,7 @@ After the js thread is created, we created a dispatch group. Then we asynchronou
 * _**Where are those 'ModuleClasses' coming from ?**_
 * _**How does it get inited?**_
 
-Let's hold those questions for now because now we are focusing how does this 'bridge' thing get running. But long story short - this is the `NativeModule` chapter and we will definitely talk about it later.
+Let's hold those questions for now because now we are focusing how does this 'bridge' thing get running. But long story short - this is about `NativeModule`  and we will definitely talk about it in a new chapter.
 
 _RCTCxxBridge.mm_
 
