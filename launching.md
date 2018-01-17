@@ -121,7 +121,7 @@ _RCTRootView.m_
 }
 ```
 
-Here goes our first Javascript call in `runApplication`. But in current context \( App code launch\), our bridge may not be ready or valid to be accurate. That's means our first `bundleFinishedLoad` call will return immediately. `RCTRootView` will waiting for `RCTJavaScriptDidLoadNotification` and call this method again with a valid bridge.
+Here goes our first Javascript call in `runApplication`. But in current context \( App cold launch\), our bridge may not be ready or valid to be accurate. That's means our first `bundleFinishedLoad` call will return immediately. `RCTRootView` will waiting for `RCTJavaScriptDidLoadNotification` and call this method again with a valid bridge.
 
 So before we get any further in Javascript code, we should first look into the `RCTBridge` class to see how the Javascript code is executed and keep our `RCTRootView` waiting.
 
