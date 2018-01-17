@@ -6,7 +6,7 @@ This chapter will talk about the initialize part of ReactNative. We will dig in 
 
 ## Since you want to read it anyway...
 
-Open the project we created in previous chapter, or open a project of your own if you prefer. Then go to `AppDelegate.m`. This is where we start
+Open the project we created in previous chapter, or open a project of your own if you prefer. Then go to `AppDelegate.m`. This is where we start.
 
 _AppDelegate.m_
 
@@ -14,7 +14,7 @@ _AppDelegate.m_
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
   //...Determine JavaScript location
-  
+
   /**
    * Bob's note:
    * Module name is the app name here.
