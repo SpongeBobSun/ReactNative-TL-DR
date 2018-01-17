@@ -1,4 +1,4 @@
-## TL;DR
+## TL;DR {#tldr}
 
 This chapter will prepare an empty ReactNative project, which will be convenient when we study ReactNative's code.
 
@@ -39,7 +39,9 @@ _AppDelegate.m_
    */
   jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
   if (!jsCodeLocation) {
-    jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
+    jsCodeLocation = [[RCTBundleURLProvider sharedSettings] 
+                        jsBundleURLForBundleRoot:@"index" 
+                                fallbackResource:nil];
   }
 ```
 
