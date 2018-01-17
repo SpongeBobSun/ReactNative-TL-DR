@@ -1,6 +1,16 @@
+## TL;DR
+
+This chapter will prepare an empty ReactNative project, which will be convenient when we study ReactNative's code.
+
+* Create or open a ReactNative project.
+* Modify native code to make it load local JS bundle instead of bundle from remote debug server.
+* Build a JS bundle if you don't have one.
+
+## Since you want to read it anyway...
+
 First create a ReactNative app using `react-native init`  or open your existing project.
 
-If you created a app from scratch using above command, your `AppDelegate.m` should looks like this - 
+If you created a app from scratch using above command, your `AppDelegate.m` should looks like this -
 
 _AppDelegate.m_
 
@@ -12,7 +22,7 @@ _AppDelegate.m_
   jsCodeLocation = [[RCTBundleURLProvider sharedSettings] 
                       jsBundleURLForBundleRoot:@"index" 
                               fallbackResource:nil];
-  
+
   //...code removed to make it more clear for reading
 }
 ```
@@ -43,5 +53,5 @@ react-native bundle --dev false \
   --bundle-output './build/main.jsbundle'
 ```
 
-This will build our JS code to `./build/main.jsbundle`. Add this file to project in Xcode and hit the run button, our app will load  local 
+This will build our JS code to `./build/main.jsbundle`. Add this file to project in Xcode and hit the run button and we are ready to go.
 
