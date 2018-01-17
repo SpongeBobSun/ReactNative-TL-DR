@@ -6,20 +6,15 @@ This chapter will talk about the initialize part of ReactNative. We will dig in 
 
 ## Since you want to read it anyway...
 
-First create a simple react-native app using `react-native init` command. Open `AppDelegate` and this is where we start.
+Open the project we created in previous chapter, or open a project of your own if you prefer. Then go to `AppDelegate.m`. This is where we start
 
 _AppDelegate.m_
 
 ```objectivec
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  NSURL *jsCodeLocation;
-
-#ifdef DEBUG
-  jsCodeLocation = [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index" fallbackResource:nil];
-#else
-  jsCodeLocation = [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
-#endif
+  //...Determine JavaScript location
+  
   /**
    * Bob's note:
    * Module name is the app name here.
