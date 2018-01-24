@@ -104,7 +104,7 @@ The `AppContainer` part is rather simple. I will not paste any code for this. If
 
 So the key part is `ReactNative.render`. `ReactNative` module is defined in _'\[your project root\]/node\_modules/react-native/Libraries/Renderer/shims/ReactNative.js_'. And it will use different 'renderer' for debugging and production but they are basically the same.
 
-`ReactNativeRenderer` will use render engine from `React` to render our 'DOM tree'. This is a big topic \(also a big source code - it has 10k+ lines\) and we won't talk about it here. You can read more about how `React` rendering 'DOM trees' from [this article](https://github.com/acdlite/react-fiber-architecture). 
+`ReactNativeRenderer` will use render engine from `React` to render our 'DOM tree'. This is a big topic \(also a big source code - it has 10k+ lines\) and we won't talk about it here. You can read more about how `React` rendering 'DOM trees' from [this article](https://github.com/acdlite/react-fiber-architecture).
 
 Long story short - this renderer will use `UIManager` to render our APP's UI. I'll paste one snippet about how does `UIManager` getting used when creating and manipulating views.
 
@@ -117,7 +117,7 @@ var NativeRenderer = reactReconciler({
     //...
   ) {
    //...
-   
+
     UIManager.createView(
       tag, // reactTag
       viewConfig.uiViewClassName, // viewName
@@ -128,9 +128,9 @@ var NativeRenderer = reactReconciler({
     //...
     return component;
   },
-  
+
   //...
-  
+
   appendChild: function(parentInstance, child) {
       var childTag = typeof child === "number" ? child : child._nativeTag;
       var children = parentInstance._children;
@@ -166,7 +166,7 @@ var NativeRenderer = reactReconciler({
 
 `UIManager` is also an important part. It handles all native UI components. We will talk about it in an individual chapter.
 
-So basically this 'renderer' in JavaScript only render a virtual 'DOM tree' in memory. The actual drawings is handled by those native ui modules. 
+So basically this 'renderer' in JavaScript only render a virtual 'DOM tree' in memory. The actual drawings is handled by those native ui modules.
 
-That's concluded how ReactNative started in JavaScript.
+That's concluded how ReactNative start in JavaScript.
 
