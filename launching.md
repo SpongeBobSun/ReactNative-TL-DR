@@ -1,12 +1,14 @@
 ## TL;DR
 
-This chapter will talk about the initialize part of ReactNative. We will dig in the source code from `AppDelegate.m` and go through functions, classes step by step. Contents in this chapter can be represented by below figure.
+这一帐介绍了ReactNative的初始化部分。我们会从`AppDelegate.m` 下手，一步一步的来看它的启动和初始化过程。本章的内容基本上可以用下面的这张图来概括。
 
 ![](/assets/RN start in native.png)
 
-## Since you want to read it anyway...
+## 来都来了...
 
 Open the project we created in previous chapter, or open a project of your own if you prefer. Then go to `AppDelegate.m`. This is where we start.
+
+打开之前我们
 
 _AppDelegate.m_
 

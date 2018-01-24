@@ -2,7 +2,7 @@
 
 * [简介](README.md)
 * [开始之前](before-we-start.md)
-* [How does ReactNative start in native](launching.md)
+* [ReactNative在native里面是如何启动的](launching.md)
 * [How does native code communicate with javascript](how-does-native-code-communicate-with-javascript.md)
 * [How does it start in Javascript](how-does-it-start-in-javascript.md)
 * [What is a native module](what-is-native-module.md)
