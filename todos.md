@@ -2,6 +2,7 @@
 * [ ] UIManager
 * [ ] JS & native communication
 * [ ] Native UI component
+* [ ] React Native renderer
 
 
 
