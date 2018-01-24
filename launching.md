@@ -836,5 +836,5 @@ _RCTRootView.m_
 
 This leads us back to where we start. We've dug into `RCTBridge` to see how it's initialized and keep our `RCTRootView` waiting for the 'JavaScriptDidLoad' notification. After our JavaScript code is loaded, it will call `AppRegistry.runApplication` in JavaScript through our `RCTBridge / RCTCxxBridge`.
 
-We will talk about how ReactNative is initialized in JavaScript next chapter.
+We will talk about how native code communicate with JavaScript in next chapter.
 
