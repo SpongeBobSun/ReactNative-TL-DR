@@ -1,8 +1,12 @@
 ## TL;DR
 
+Below call stack should cover content in this chapter.
+
+![](/assets/Screen Shot 2018-01-18 at 3.24.44 PM.png)
+
 ## Since you want to read it anyway...
 
-In previous chapter, we ended with below code block -
+We ended with below code block in Chapter1 -
 
 ```objectivec
 - (void)runApplication:(RCTBridge *)bridge
