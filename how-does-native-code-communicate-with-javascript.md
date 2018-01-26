@@ -89,6 +89,12 @@ void JSCExecutor::callFunction(const std::string& moduleId,
       //...Throw error
     }
   }();
+  
+  /**
+   * Bob's note:
+   * Get pending native calls from JavaScript when done with JavaScript function call.
+   * Call corresponding 'Module.method' using `NativeModule`
+   **/
   callNativeModules(std::move(result));
 }
 
