@@ -105,7 +105,7 @@ void JSCExecutor::bindBridge() throw(JSException) {
       if (batchedBridgeValue.isUndefined()) {
         throw JSException("Could not get BatchedBridge, make sure your bundle is packaged correctly");
       }
- 
+
     }
 
     auto batchedBridge = batchedBridgeValue.asObject();
@@ -115,8 +115,7 @@ void JSCExecutor::bindBridge() throw(JSException) {
     m_callFunctionReturnResultAndFlushedQueueJS = batchedBridge.getProperty("callFunctionReturnResultAndFlushedQueue").asObject();
   });
 }
-    
 ```
 
-
+This is the key part of how native code calling JavaScript functions.
 
