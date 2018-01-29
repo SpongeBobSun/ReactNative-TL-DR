@@ -4,9 +4,9 @@
 * [Before we start](before-we-start.md)
 * [How does ReactNative start in native](launching.md)
 * [How does JavaScript method get called from native code](how-does-native-code-communicate-with-javascript.md)
+* [How does native method get called in JavaScript](how-does-javascript-communicate-with-native-code.md)
 * [How does it start in Javascript](how-does-it-start-in-javascript.md)
 * [What is a native module](what-is-native-module.md)
-* How does Javascript communicate with native code
 * [How does ReactNative use JavascriptCore](how-does-javascriptcore-get-used.md)
 * [Todos](todos.md)
 
