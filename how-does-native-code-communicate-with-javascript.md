@@ -153,7 +153,7 @@ _JavaScriptCore.h_
 #define JSC_JSObjectCallAsFunction(...) __jsc_wrapper(JSObjectCallAsFunction, __VA_ARGS__)
 ```
 
-So the underlying function of `JSValue::callAsFunction` is `JSObjectCallAsFuntion` defined in `JavaScriptCore`. You can read more about this function in Apple's documents. But as you can guess from the function name, it will call an object as function.
+So the underlying function of `JSValue::callAsFunction` is `JSObjectCallAsFuntion` provided by Apple's `JavaScriptCore`. You can read more about this function in Apple's documents. But as you can guess from the function name, it will call an object as function.
 
 Before we getting any further with 'BatchedBridge', there is another important part: How does native methods get called in JavaScript. We will not dig into this in this chapter but long story short - calls are not made in real time. There is a 'queue' for all native calls from JavaScript. And when we are done with JavaScript calls, the queue will be passed to native and all items in it will be executed. That's why those functions have  '\*\*\*ReturnFlushedQueueJS' names.
 
