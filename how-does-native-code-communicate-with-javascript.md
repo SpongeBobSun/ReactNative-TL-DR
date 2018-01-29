@@ -128,9 +128,9 @@ void JSCExecutor::bindBridge() throw(JSException) {
 
 This is the key part of how native code calling JavaScript functions. All JavaScript calls from native will dispatched by a 'BatchedBridge', which is a object defined in 'JSContext' using JavaScript. This 'BatchedBridge' contains several functions which will dispatch JavaScript methods for native code.
 
-Also you may find out functions like `asObject`  and `getProperty` are very convenient but doesn't look familiar. This is a C++ wrapper for `JSObjectRef`  and `JSValueRef`  which defined in `ReactCommon/jschelpers/Value.h`. 
+Also you may find out functions like `asObject`  and `getProperty` are very convenient but doesn't look familiar. This is a C++ wrapper for `JSObjectRef`  and `JSValueRef`  which defined in `ReactCommon/jschelpers/Value.h`.
 
-Before we getting any further with 'BatchedBridge', there is another important part: How does native methods get called in JavaScript. We will not dig into this in this chapter but long story short - calls are not made in real time. There is a 'queue' for all native calls from JavaScript. And when we are done with JavaScript calls, the queue will be passed to native and all items in it will be executed. That's why all function have those '\*\*\*FlushedQueueJS' names.
+Before we getting any further with 'BatchedBridge', there is another important part: How does native methods get called in JavaScript. We will not dig into this in this chapter but long story short - calls are not made in real time. There is a 'queue' for all native calls from JavaScript. And when we are done with JavaScript calls, the queue will be passed to native and all items in it will be executed. That's why all function have those '\*\*\*ReturnFlushedQueueJS' names.
 
 Now let's find out what's happening in ReactNative's 'BatchedBridge'.
 
@@ -187,7 +187,7 @@ getCallableModule(name: string) {
 }
 ```
 
-This is quite simple too: find the module and method, then execute it. 
+This is quite simple too: find the module and method, then execute it.
 
 So the question is - where does those module and methods come from? Does all methods in JavaScript can be called in native?
 
@@ -201,7 +201,7 @@ registerCallableModule(name: string, module: Object) {
 }
 ```
 
-For example you can find code about `AppRegistry` registered itself:
+For example you can find code about how `AppRegistry` registered itself:
 
 _AppRegistry.js_
 
