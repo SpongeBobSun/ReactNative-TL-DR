@@ -234,7 +234,7 @@ _AppRegistry.js_
 BatchedBridge.registerCallableModule('AppRegistry', AppRegistry);
 ```
 
-That's basically explained how native code calling JavaScript methods. 
+That's basically explained how native code calling JavaScript methods.
 
 ## Get your hands dirty.
 
@@ -275,7 +275,7 @@ _AppDelegate.m_
   //...jsCodeLocation
 
   _rootView = //...Create RCTRootView
-  
+
   //...Add an UIButton natively to trigger js call
   UIButton *button = [[UIButton alloc] initWithFrame:CGRectMake(20, 20, 100, 100)];
   button.backgroundColor = UIColor.cyanColor;
@@ -296,7 +296,5 @@ _AppDelegate.m_
 @end
 ```
 
-
-
-
+That's all. When you press the button in root viewcontroller, it will call our log function through `BatchedBridge`.
 
