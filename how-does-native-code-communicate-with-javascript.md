@@ -128,7 +128,28 @@ void JSCExecutor::bindBridge() throw(JSException) {
 
 This is the key part of how native code calling JavaScript functions. All JavaScript calls from native will dispatched by a 'BatchedBridge', which is a object defined in 'JSContext' using JavaScript. This 'BatchedBridge' contains several functions which will dispatch JavaScript methods for native code.
 
-Also you may find out functions like `asObject`  and `getProperty` are very convenient but doesn't look familiar. This is a C++ wrapper for `JSObjectRef`  and `JSValueRef`  which defined in `ReactCommon/jschelpers/Value.h`.
+Also you may find out functions like `asObject`  and `getProperty` are very convenient but doesn't look familiar. This is a C++ wrapper for `JSObjectRef`  and `JSValueRef`  which defined in `ReactCommon/jschelpers/Value.h`. This wrapper also bridging function calls between itself and `JavaScriptCore` . For example `callAsFunction` is implemented like this:
+
+_Value.m_
+
+```cpp
+Value Object::callAsFunction(JSObjectRef thisObj, int nArgs, const JSValueRef args[]) const {
+  JSValueRef exn;
+  JSValueRef result = JSC_JSObjectCallAsFunction(m_context, m_obj, thisObj, nArgs, args, &exn);
+  if (!result) {
+    throw JSException(m_context, exn, "Exception calling object as function");
+  }
+  return Value(m_context, result);
+}
+```
+
+_JavaScriptCore.h_
+
+```cpp
+#define JSC_JSObjectCallAsFunction(...) __jsc_wrapper(JSObjectCallAsFunction, __VA_ARGS__)
+```
+
+So the underlying function of `JSValue::callAsFunction` is `JSObjectCallAsFuntion` defined in `JavaScriptCore`. You can read more about this function in Apple's documents. But as you can guess from the function name, it will call an object as function.
 
 Before we getting any further with 'BatchedBridge', there is another important part: How does native methods get called in JavaScript. We will not dig into this in this chapter but long story short - calls are not made in real time. There is a 'queue' for all native calls from JavaScript. And when we are done with JavaScript calls, the queue will be passed to native and all items in it will be executed. That's why all function have those '\*\*\*ReturnFlushedQueueJS' names.
 
