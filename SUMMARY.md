@@ -1,7 +1,7 @@
 # Summary
 
-* [简介](README.md)
-* [开始之前](before-we-start.md)
+* [Intro](README.md)
+* [Before we start](before-we-start.md)
 * [How does ReactNative start in native](launching.md)
 * [How does native code communicate with javascript](how-does-native-code-communicate-with-javascript.md)
 * [How does it start in Javascript](how-does-it-start-in-javascript.md)
