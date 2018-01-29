@@ -1,6 +1,10 @@
 ## TL;DR
 
-## 
+We are going to talk about how does JavaScript method get called from native. Contents in this chapter can be covered by below figure.
+
+![](/assets/native-call-js.png)
+
+At the end of this chapter there is an experiment about how to export JavaScript methods and call it from native.
 
 ## Since you want to read it anyway...
 
