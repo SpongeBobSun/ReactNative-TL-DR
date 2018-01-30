@@ -2,31 +2,31 @@ NativeModules
 
 -----------------
 
-in \[RCTCxxBridge start\]
+in [RCTCxxBridge start]
 
-    \[self \_initModules:RCTGetModuleClasses\(\) withDispatchGroup:prepareBridge lazilyDiscovered:NO\];
+    [self _initModules:RCTGetModuleClasses withDispatchGroup:prepareBridge lazilyDiscovered:NO];
 
-        \[self registerModuleForClasses\]
+        [self registerModuleForClasses]
 
-          \* generate module data
+          * generate module data
 
              RCTModuleData.mm: Create module
 
-         \* add module data to `_moduleDataByID`
+          * add module data to `_moduleDataByID`
 
        Create module instance in `instance` getter.
 
   in RCTBridge
 
-    Record RCT\_EXPORT\_MODULE macro classes
+    Record RCT_EXPORT_MODULE macro classes
 
 
 
-\[RCTCxxBridge \_initializeBridge\]
+[RCTCxxBridge _initializeBridge]
 
-reactInstance-&gt;initializeBridge
+reactInstance->initializeBridge
 
-    \[RCTCxxBridge buildModuleRegistry\]
+    [RCTCxxBridge buildModuleRegistry]
 
-    createNativeModules\(\_moduleDataByID, self, \_reactInstance\) \(in file RCTCxxUtils\)
+    createNativeModules(_moduleDataByID, self, _reactInstance) (in file RCTCxxUtils)
 
