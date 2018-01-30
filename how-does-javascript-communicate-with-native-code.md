@@ -6,7 +6,7 @@ We will talk about how native methods get called from JavaScript in this chapter
 
 If you've played with `JavaScriptCore` before \(maybe in a hybrid app\) , you might recall we can inject a native function to `JSContext` in JavaScriptCore \( read more on this link - [JSObjectMakeFunctionWithCallback](https://developer.apple.com/documentation/javascriptcore/1451336-jsobjectmakefunctionwithcallback?language=objc) \). This could be a way for JavaScript to communicate with native code. So you might think that `ReactNative` is using the same approach to bring native calls to JavaScript.
 
-This is not quite accurate. `ReactNative` did use this approach to let JavaScript call native methods, but not all methods could be called like this. Actually `ReactNative` is centralizing all native calls from JavaScript through `NativeModule`.
+But this is not quite accurate. `ReactNative` did use this approach to let JavaScript call native methods, but not all methods could be called like this. Actually `ReactNative` is centralizing all native calls from JavaScript through `NativeModule`.
 
 To understand this, let's start with reviewing the initialization part of `JSCExecutor`.
 
@@ -62,7 +62,28 @@ void installGlobalProxy(
 
 During the initialization we've created a JavaScript object and injected it to `JSContext`. Also we've replaced this object's getters to our native implementation which will return a "NativeModule" object from 'm\_nativeModules'. For now we just assume this is a map which holds native module instances and native module names.
 
-The `NativeModuleProxy` we just injected in JSContext will provide native module access to JavaScript. You could use debugging tools in `Safari` to inspect it.
+The `NativeModuleProxy` we just injected in JSContext will provide native module access to JavaScript and will be held in 'NativeModule.js'
 
-![](/assets/NativeModuleProxy.png)When JavaScript request to access a property in `NativeModuleProxy`, the native getter - `JSCExecutor::getNativeModule` will be called.
+_NativeModule.js_
+
+```js
+let NativeModules : {[moduleName: string]: Object} = {};
+if (global.nativeModuleProxy) {
+  NativeModules = global.nativeModuleProxy;
+} else {
+  const bridgeConfig = global.__fbBatchedBridgeConfig;
+  /**
+   * Bob's note:
+   * This '__fbBAtchedBridgeCOnfig' will only be set in 'RCTObjcExecutor',
+   * which is only used in debug mode.
+   */
+   //...code to generate native module
+}
+
+module.exports = NativeModules;
+```
+
+ You could use debugging tools in `Safari` to inspect native modules in `NativeModuleProxy`.
+
+![](/assets/NativeModuleProxy.png)When JavaScript request to access a property in `NativeModuleProxy`, the native getter - `JSCExecutor::getNativeModule` will be called. So the question is - what's a `NativeModule` ?
 
