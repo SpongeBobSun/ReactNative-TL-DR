@@ -60,5 +60,9 @@ void installGlobalProxy(
 }
 ```
 
-During the initialization we've created a JavaScript object and injected it to `JSContext`. Also we've replaced this object's getters to our native implementation which will return a "NativeModule" object from 'm\_nativeModules'. We **won't** talk about about how does `NativeModules`  get initialized and loaded in this chapter. For now we just assume this is a map which holds native module instances and native module names.
+During the initialization we've created a JavaScript object and injected it to `JSContext`. Also we've replaced this object's getters to our native implementation which will return a "NativeModule" object from 'm\_nativeModules'. For now we just assume this is a map which holds native module instances and native module names.
+
+The `NativeModuleProxy` we just injected in JSContext will provide native module access to JavaScript. You could use debugging tools in `Safari` to inspect it.
+
+![](/assets/NativeModuleProxy.png)When JavaScript request to access a property in `NativeModuleProxy`, the native getter - `JSCExecutor::getNativeModule` will be called.
 
