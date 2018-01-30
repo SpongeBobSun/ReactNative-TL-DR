@@ -52,10 +52,12 @@ void installGlobalProxy(
   JSClassRef proxyClass = JSC_JSClassCreate(isCustomJSC, &proxyClassDefintion);
   JSObjectRef proxyObj = JSC_JSObjectMake(ctx, proxyClass, nullptr);
   JSC_JSClassRelease(isCustomJSC, proxyClass);
-
+  /**
+   * Bob's note:
+   * Inject object to JS Context
+   */
   Object::getGlobalObject(ctx).setProperty(name, Value(ctx, proxyObj));
 }
-
 ```
 
 During the initialization we've created a JavaScript object and injected it to `JSContext`. Also we've replaced this object's getters to our native implementation which will return a "NativeModule" object from 'm\_nativeModules'. We **won't** talk about about how does `NativeModules`  get initialized and loaded in this chapter. For now we just assume this is a map which holds native module instances and native module names.
