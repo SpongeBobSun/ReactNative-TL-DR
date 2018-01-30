@@ -2,6 +2,8 @@ NativeModules
 
 -----------------
 
+read it as pure text not MD!
+
 in [RCTCxxBridge start]
 
     [self _initModules:RCTGetModuleClasses withDispatchGroup:prepareBridge lazilyDiscovered:NO];
