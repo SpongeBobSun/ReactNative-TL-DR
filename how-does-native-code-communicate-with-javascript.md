@@ -238,7 +238,7 @@ _AppRegistry.js_
 BatchedBridge.registerCallableModule('AppRegistry', AppRegistry);
 ```
 
-That's basically explained how native code calling JavaScript methods. We will talk about how native methods get called from JavaScript.
+That's basically explained how native code calling JavaScript methods. In next chapter we will start talk about how native methods get called from JavaScript.
 
 ## Get your hands dirty.
 

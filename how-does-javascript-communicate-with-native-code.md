@@ -83,7 +83,7 @@ if (global.nativeModuleProxy) {
 module.exports = NativeModules;
 ```
 
- You could use debugging tools in `Safari` to inspect native modules in `NativeModuleProxy`.
+You could use debugging tools in `Safari` to inspect native modules in `NativeModuleProxy`.
 
-![](/assets/NativeModuleProxy.png)When JavaScript request to access a property in `NativeModuleProxy`, the native getter - `JSCExecutor::getNativeModule` will be called. So the question is - what's a `NativeModule` ?
+![](/assets/NativeModuleProxy.png)When JavaScript request to access a property in `NativeModuleProxy`, the native getter - `JSCExecutor::getNativeModule` will be called. 
 
