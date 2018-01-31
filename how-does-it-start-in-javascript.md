@@ -1,6 +1,6 @@
 ## TL;DR
 
-Below call stack should cover content in this chapter.
+Below call stack should cover this chapter.
 
 ![](/assets/Screen Shot 2018-01-18 at 3.24.44 PM.png)
 
