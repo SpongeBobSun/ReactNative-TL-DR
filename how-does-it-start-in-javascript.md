@@ -170,7 +170,7 @@ var NativeRenderer = reactReconciler({
 
 `UIManager` is also an important part. It handles all native UI components. We will talk about it in an individual chapter.
 
-So basically this 'renderer' in JavaScript only render a virtual 'DOM tree' in memory. The actual drawings is handled by those native ui modules.
+So basically this 'renderer' in JavaScript only render a virtual 'DOM tree' in memory. The actual drawings is handled by native ui modules.
 
 That's concluded how ReactNative start in JavaScript.
 
