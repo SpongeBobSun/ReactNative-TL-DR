@@ -68,3 +68,104 @@ void RCTRegisterModule(Class moduleClass)
 
 When we declare our module using `RCT_EXPORT_MODULE` , we will add our class to this 'RCTModuleClasses' array. As we mentioned in Chapter 1 there is a function call in the `start` method of `RCTCxxBridge` which will initialize native modules. And that's where those registered module classes come to play.
 
+_RCTCxxBridge.mm_
+
+```objectivec
+  -(void)start {
+    //...
+    [self _initModules:RCTGetModuleClasses() withDispatchGroup:prepareBridge lazilyDiscovered:NO];
+    //...
+  }
+
+- (void)_initModules:(NSArray<id<RCTBridgeModule>> *)modules
+   withDispatchGroup:(dispatch_group_t)dispatchGroup
+    lazilyDiscovered:(BOOL)lazilyDiscovered
+{
+  //...Assertion
+
+  // Set up moduleData for automatically-exported modules
+  NSArray<RCTModuleData *> *moduleDataById = [self registerModulesForClasses:modules];
+
+#ifdef RCT_DEBUG
+  if (lazilyDiscovered) {
+    //...debug code
+  }
+  else
+#endif
+  {
+    RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways,
+                            @"-[RCTCxxBridge initModulesWithDispatchGroup:] moduleData.hasInstance", nil);
+    // Dispatch module init onto main thread for those modules that require it
+    // For non-lazily discovered modules we run through the entire set of modules
+    // that we have, otherwise some modules coming from the delegate
+    // or module provider block, will not be properly instantiated.
+    for (RCTModuleData *moduleData in _moduleDataByID) {
+      if (moduleData.hasInstance && (!moduleData.requiresMainQueueSetup || RCTIsMainQueue())) {
+        // Modules that were pre-initialized should ideally be set up before
+        // bridge init has finished, otherwise the caller may try to access the
+        // module directly rather than via `[bridge moduleForClass:]`, which won't
+        // trigger the lazy initialization process. If the module cannot safely be
+        // set up on the current thread, it will instead be async dispatched
+        // to the main thread to be set up in _prepareModulesWithDispatchGroup:.
+        (void)[moduleData instance];
+      }
+    }
+    RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
+
+    // From this point on, RCTDidInitializeModuleNotification notifications will
+    // be sent the first time a module is accessed.
+    _moduleSetupComplete = YES;
+    [self _prepareModulesWithDispatchGroup:dispatchGroup];
+  }
+  //...Profile code
+}
+
+- (NSArray<RCTModuleData *> *)registerModulesForClasses:(NSArray<Class> *)moduleClasses
+{
+
+  NSMutableArray<RCTModuleData *> *moduleDataByID = [NSMutableArray arrayWithCapacity:moduleClasses.count];
+  for (Class moduleClass in moduleClasses) {
+    NSString *moduleName = RCTBridgeModuleNameForClass(moduleClass);
+
+    // Don't initialize the old executor in the new bridge.
+    // TODO mhorowitz #10487027: after D3175632 lands, we won't need
+    // this, because it won't be eagerly initialized.
+    if ([moduleName isEqualToString:@"RCTJSCExecutor"]) {
+      continue;
+    }
+
+    // Check for module name collisions
+    RCTModuleData *moduleData = _moduleDataByName[moduleName];
+    if (moduleData) {
+      if (moduleData.hasInstance) {
+        // Existing module was preregistered, so it takes precedence
+        continue;
+      } else if ([moduleClass new] == nil) {
+        // The new module returned nil from init, so use the old module
+        continue;
+      } else if ([moduleData.moduleClass new] != nil) {
+        // Both modules were non-nil, so it's unclear which should take precedence
+        RCTLogError(@"Attempted to register RCTBridgeModule class %@ for the "
+                    "name '%@', but name was already registered by class %@",
+                    moduleClass, moduleName, moduleData.moduleClass);
+      }
+    }
+
+    // Instantiate moduleData
+    // TODO #13258411: can we defer this until config generation?
+    moduleData = [[RCTModuleData alloc] initWithModuleClass:moduleClass bridge:self];
+
+    _moduleDataByName[moduleName] = moduleData;
+    [_moduleClassesByID addObject:moduleClass];
+    [moduleDataByID addObject:moduleData];
+  }
+  [_moduleDataByID addObjectsFromArray:moduleDataByID];
+
+  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
+
+  return moduleDataByID;
+}
+```
+
+
+
