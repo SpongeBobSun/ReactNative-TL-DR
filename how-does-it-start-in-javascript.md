@@ -106,7 +106,7 @@ This is pretty straight forward - first it will wrap our component in `AppContai
 
 The `AppContainer` part is rather simple. I will not paste any code for this. If you looking into `AppContainer.js`, it basically wrapped 'yellow box', 'inspector' and our app root to a `View`. The previous two are for debugging use. It also injected the debug inspector directly in 'React DOM'.
 
-So the key part is `ReactNative.render`. `ReactNative` module is defined in _'\[your project root\]/node\_modules/react-native/Libraries/Renderer/shims/ReactNative.js_'. And it will use different 'renderer' for debugging and production but they are basically the same.
+So the key part is `ReactNative.render`. `ReactNative` module is defined in _'\[your project root\]/node\_modules/react-native/Libraries/Renderer/shims/ReactNative.js_'. And it will use different 'renderer' for debugging and production but they are basically the same thing.
 
 `ReactNativeRenderer` will use render engine from `React` to render our 'DOM tree'. This is a big topic \(also a big source code - it has 10k+ lines\) and we won't talk about it here. You can read more about how `React` rendering 'DOM trees' from [this article](https://github.com/acdlite/react-fiber-architecture).
 
