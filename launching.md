@@ -325,7 +325,7 @@ After the js thread is created, we created a dispatch group. Then we asynchronou
 * _**Where are those 'ModuleClasses' coming from ?**_
 * _**How does it get inited?**_
 
-Let's hold those questions for now because now we are focusing how does this 'bridge' thing get running. But long story short - this is about `NativeModule`  and we will definitely talk about it in a new chapter.
+Let's hold those questions for now because now we are focusing how does this 'bridge' thing get running. But long story short - this is about `NativeModule`  and we will definitely talk about it in a [new chapter](./what-is-native-module.md).
 
 _RCTCxxBridge.mm_
 
