@@ -34,7 +34,7 @@ RCT_EXTERN void RCTRegisterModule(Class); \
 @end
 ```
 
-The module register part is in the `RCT_EXPORT_MODULE()` macro. 
+The module register part is in the `RCT_EXPORT_MODULE()` macro.
 
 _RCTBridge.m_
 
@@ -64,8 +64,7 @@ void RCTRegisterModule(Class moduleClass)
   // Register module
   [RCTModuleClasses addObject:moduleClass];
 }
-
 ```
 
-When we declare our module using `RCT_EXPORT_MODULE` , we will add our class to this 'RCTModuleClasses' array. And as we mentioned in Chapter 1 there is a function call in the `start` method of `RCTCxxBridge` which will initialize native modules.
+When we declare our module using `RCT_EXPORT_MODULE` , we will add our class to this 'RCTModuleClasses' array. As we mentioned in Chapter 1 there is a function call in the `start` method of `RCTCxxBridge` which will initialize native modules. And that's where those registered module classes come to play.
 
