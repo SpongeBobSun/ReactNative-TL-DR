@@ -1,6 +1,6 @@
 ## TL;DR
 
-We will talk about how does a `NativeModule` get initialized.
+We will talk about how does a `NativeModule` get initialized in this chapter.
 
 ## Since you want to read it anyway....
 
