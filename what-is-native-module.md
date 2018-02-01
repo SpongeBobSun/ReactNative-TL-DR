@@ -2,6 +2,10 @@
 
 We will talk about how does a `NativeModule` get initialized and how to prepare them for JavaScript in this chapter. If you want to know how does native method get called from JavaScript you should go to next chapter.
 
+Below chart should cover contents in this chapter.
+
+
+
 ## Since you want to read it anyway....
 
 We've mentioned `NativeModule` several times in previous chapters and now is the time we talk about it.
@@ -510,6 +514,4 @@ _RCTModuleMethod.mm - invoke method_
 Looks like it's pretty straight forward - get `NSInvocation` for required method and invoke it on module object. But there is one tricky part - `processMethodSignature`. This method will generate `NSInvocation` and parameters which match the selector. I'll not paste source code of it due to it's long and a bit complicated but you can read it yourself if you are interested.
 
 One thing to notice is - 'Promise' and 'Reject' callback calls will be throw back to JavaScript code using `[RCTCxxBridge enqueueCallBack]`. This will eventually be handled by our good old `JSCExecutor` using `JSCExecutor::invokeCallback` which using a similar approach as `JSCExecutor::callFunction`.
-
-
 
