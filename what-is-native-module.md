@@ -1,6 +1,6 @@
 ## TL;DR
 
-We will talk about how does a `NativeModule` get initialized in this chapter.
+We will talk about how does a `NativeModule` get initialized and how to prepare them for JavaScript in this chapter. If you want to know how does native method get called from JavaScript you should go to next chapter.
 
 ## Since you want to read it anyway....
 
@@ -36,7 +36,7 @@ RCT_EXTERN void RCTRegisterModule(Class); \
 @end
 ```
 
-The module register part is in the `RCT_EXPORT_MODULE()` macro.
+The module register part is in the `RCT_EXPORT_MODULE()` macro which will call `RCTRegisterModule` .
 
 _RCTBridge.m_
 
@@ -225,6 +225,88 @@ _RCTModuleData.mm - creation of native module instance._
 }
 ```
 
+`RCTModuleData` is a rather important wrapper for our native modules. Not only it will build our module instance using registered classes, but also it will create a new method queue for per module.
+
+_RCTModuleData.mm - Create method queue_
+
+```objectivec
+- (void)setUpMethodQueue
+{
+  if (_instance && !_methodQueue && _bridge.valid) {
+    //...
+    BOOL implementsMethodQueue = [_instance respondsToSelector:@selector(methodQueue)];
+    if (implementsMethodQueue && _bridge.valid) {
+      /**
+       * Bob's note:
+       * Using specified dispatch queue for method in module.
+       */
+      _methodQueue = _instance.methodQueue;
+    }
+    if (!_methodQueue && _bridge.valid) {
+      // Create new queue (store queueName, as it isn't retained by dispatch_queue)
+      _queueName = [NSString stringWithFormat:@"com.facebook.react.%@Queue", self.name];
+      _methodQueue = dispatch_queue_create(_queueName.UTF8String, DISPATCH_QUEUE_SERIAL);
+
+      // assign it to the module
+      if (implementsMethodQueue) {
+        @try {
+          [(id)_instance setValue:_methodQueue forKey:@"methodQueue"];
+        }
+        @catch (NSException *exception) {
+          //...
+        }
+      }
+    }
+  //...
+  }
+}
+```
+
+Also we can specify a dispatch queue for our native module. We can get a important conclusion - `ReactNative`_ will use a new dispatch queue for native modules on **iOS**_. This is very different on Android version. You can read more about Android version performance on `ReactNative`' s doc. So if you have some tasks on JavaScript which is very time consuming, you can consider to move them in a native module and execute them in a new JS context.
+
+Another reason why `RCTModuleData` is an important wrapper is - it will generate a methods list. This list will be used to find methods for JavaScript.
+
+_RCTModuleData.mm - Generate methods list_
+
+```objectivec
+- (NSArray<id<RCTBridgeMethod>> *)methods
+{
+  if (!_methods) {
+    NSMutableArray<id<RCTBridgeMethod>> *moduleMethods = [NSMutableArray new];
+
+    if ([_moduleClass instancesRespondToSelector:@selector(methodsToExport)]) {
+      [moduleMethods addObjectsFromArray:[self.instance methodsToExport]];
+    }
+
+    unsigned int methodCount;
+    Class cls = _moduleClass;
+    while (cls && cls != [NSObject class] && cls != [NSProxy class]) {
+      Method *methods = class_copyMethodList(object_getClass(cls), &methodCount);
+
+      for (unsigned int i = 0; i < methodCount; i++) {
+        Method method = methods[i];
+        SEL selector = method_getName(method);
+        if ([NSStringFromSelector(selector) hasPrefix:@"__rct_export__"]) {
+          IMP imp = method_getImplementation(method);
+          auto exportedMethod = ((const RCTMethodInfo *(*)(id, SEL))imp)(_moduleClass, selector);
+          id<RCTBridgeMethod> moduleMethod = [[RCTModuleMethod alloc] initWithExportedMethod:exportedMethod
+                                                                                 moduleClass:_moduleClass];
+          [moduleMethods addObject:moduleMethod];
+        }
+      }
+
+      free(methods);
+      cls = class_getSuperclass(cls);
+    }
+
+    _methods = [moduleMethods copy];
+  }
+  return _methods;
+}
+```
+
+When we export a method using `RCT_EXPORT_METHOD`, it will automatically add a '\_\_rct\_export\_\_' prefix on our method name. And `RCTModuleData` is going to use this prefix to find exported method in our class. Then it will wrap our method using `RCTModuleMethod` and save it to a class global array. We will talk about this `RCTModuleMethod` later.
+
 Now we have saved our native module instances \( wrapped by RCTModuleData \) , let's continue the initialize part of `RCTCxxBridge`.
 
 _RCTCxxBridge.mm_
@@ -252,7 +334,34 @@ _RCTCxxBridge.mm_
 }
 ```
 
-This will build a `ModuleRegistry` with whatever returned by `createNativeModules`. Then `RCTCxxBridge` will use it to initialize 'reactInstance', which will send it all the way down to `JsToNativeBridge`. `JsToNativeBridge` will handle native function calls from JavaScript code.
+_RCTCxxUtils.mm - createNativeModules_
+
+```cpp
+std::vector<std::unique_ptr<NativeModule>> createNativeModules(
+  NSArray<RCTModuleData *> *modules, 
+  RCTBridge *bridge, 
+  const std::shared_ptr<Instance> &instance)
+{
+  std::vector<std::unique_ptr<NativeModule>> nativeModules;
+  for (RCTModuleData *moduleData in modules) {
+    if ([moduleData.moduleClass isSubclassOfClass:[RCTCxxModule class]]) {
+      nativeModules.emplace_back(std::make_unique<CxxNativeModule>(
+        instance,
+        [moduleData.name UTF8String],
+        [moduleData] { return [(RCTCxxModule *)(moduleData.instance) createModule]; },
+        std::make_shared<DispatchMessageQueueThread>(moduleData)));
+    } else {
+      /**
+       * Create another wrapper for our native module
+       */
+      nativeModules.emplace_back(std::make_unique<RCTNativeModule>(bridge, moduleData));
+    }
+  }
+  return nativeModules;
+}
+```
+
+This will build a `ModuleRegistry`  by creating another wrapper \( `RCTNativeModule` \) for native modules using `createNativeModules`. Then `RCTCxxBridge` will use it to initialize 'reactInstance', which will send it all the way down to `JsToNativeBridge`. `JsToNativeBridge` will handle native function calls from JavaScript code.
 
 _NativeToJsBridge.cpp - Class JsToNativeBridge_
 
@@ -267,5 +376,138 @@ void callNativeModules(
 }
 ```
 
-We will talk about how JavaScript calling native methods in next chapter. Now we should assume all native calls from JavaScript will be handled by `JsToNativeBridge`, then it will be dispatched by our `ModuleRegistry` using 'module id' and 'method id'.
+_ModuleRegistry.cpp - Dispatch calls to RCTNativeModule_
+
+```cpp
+void ModuleRegistry::callNativeMethod(
+  unsigned int moduleId, 
+  unsigned int methodId, 
+  folly::dynamic&& params, 
+  int callId) {
+  //...module id validation
+  modules_[moduleId]->invoke(methodId, std::move(params), callId);
+}
+```
+
+We will talk about how JavaScript calling native methods in next chapter. Now we should assume all native calls from JavaScript will be handled by `JsToNativeBridge`, then it will be dispatched by `ModuleRegistry` using 'module id' and 'method id' to `RCTNativeModule`. So let's take a close look at `RCTNativeModule`.
+
+_RCTNativeModule.mm_
+
+```objectivec
+void RCTNativeModule::invoke(unsigned int methodId, folly::dynamic &&params, int callId) {
+  //...weakify variables
+  dispatch_block_t block = [weakBridge, weakModuleData, methodId, params=std::move(params), callId] {
+    //...
+    invokeInner(weakBridge, weakModuleData, methodId, std::move(params));
+  };
+
+  /**
+   * Bob's note:
+   * As we mentioned before, 
+   * method will be dispatched on module's queue.
+   */
+  dispatch_queue_t queue = m_moduleData.methodQueue;
+  if (queue == RCTJSThread) {
+    block();
+  } else if (queue) {
+    dispatch_async(queue, block);
+  }
+}
+
+static MethodCallResult invokeInner(
+  RCTBridge *bridge, 
+  RCTModuleData *moduleData, 
+  unsigned int methodId, 
+  const folly::dynamic &params) {
+  //...nil check for params
+
+  id<RCTBridgeMethod> method = moduleData.methods[methodId];
+  //...nil check for method
+
+  NSArray *objcParams = convertFollyDynamicToId(params);
+  @try {
+    /**
+     * Bob's note:
+     * Use actual native module instance for invocation.
+     */
+    id result = [method invokeWithBridge:bridge module:moduleData.instance arguments:objcParams];
+    return convertIdToFollyDynamic(result);
+  }
+  @catch (NSException *exception) {
+    // Pass on JS exceptions
+    //...
+  }
+  return folly::none;
+}
+```
+
+The actual method invoke is happened in `RCTModuleMethod`. And some conversion is needed before & after method invoke. Also we are using the actual native module instance rather than those wrapped instance.
+
+_RCTModuleMethod.mm - invoke method_
+
+```objectivec
+- (id)invokeWithBridge:(RCTBridge *)bridge
+                module:(id)module
+             arguments:(NSArray *)arguments
+{
+  if (_argumentBlocks == nil) {
+    /**
+     * Bob's note:
+     * Tricky part
+     */
+    [self processMethodSignature];
+  }
+
+#if RCT_DEBUG
+  //...debug code
+#endif
+
+  // Set arguments
+  NSUInteger index = 0;
+  for (id json in arguments) {
+    RCTArgumentBlock block = _argumentBlocks[index];
+    if (!block(bridge, index, RCTNilIfNull(json))) {
+      // Invalid argument, abort
+      RCTLogArgumentError(self, index, json, "could not be processed. Aborting method call.");
+      return nil;
+    }
+    index++;
+  }
+
+  // Invoke method
+#ifdef RCT_MAIN_THREAD_WATCH_DOG_THRESHOLD
+  if (RCTIsMainQueue()) {
+    CFTimeInterval start = CACurrentMediaTime();
+    [_invocation invokeWithTarget:module];
+    CFTimeInterval duration = CACurrentMediaTime() - start;
+    if (duration > RCT_MAIN_THREAD_WATCH_DOG_THRESHOLD) {
+      //...Warning about main thread blocking
+    }
+  } else {
+    [_invocation invokeWithTarget:module];
+  }
+#else
+  [_invocation invokeWithTarget:module];
+#endif
+
+  /**
+   * Bob's note:
+   * Below line doesn't make sence.
+   * Shame on whoever left this.
+   */
+  index = 2;
+  [_retainedObjects removeAllObjects];
+
+  if (_methodInfo->isSync) {
+    void *returnValue;
+    [_invocation getReturnValue:&returnValue];
+    return (__bridge id)returnValue;
+  }
+  return nil;
+}
+```
+
+Looks like it's pretty straight forward - get `NSInvocation` for required method and invoke it on module object. But there is one tricky part - `processMethodSignature`. This method will generate `NSInvocation` and parameters which match the selector. I'll not paste source code of it due to it's long and a bit complicated but you can read it yourself if you are interested. 
+
+One thing to notice is - 'Promise' and 'Reject' callback calls will be throw back to JavaScript code using `[RCTCxxBridge enqueueCallBack]`. This will eventually be handled by our good old `JSCExecutor` using `JSCExecutor::invokeCallback` which using a similar approach as `JSCExecutor::callFunction`.
 
