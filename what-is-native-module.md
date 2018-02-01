@@ -93,31 +93,17 @@ _RCTCxxBridge.mm_
   else
 #endif
   {
-    RCT_PROFILE_BEGIN_EVENT(RCTProfileTagAlways,
-                            @"-[RCTCxxBridge initModulesWithDispatchGroup:] moduleData.hasInstance", nil);
-    // Dispatch module init onto main thread for those modules that require it
-    // For non-lazily discovered modules we run through the entire set of modules
-    // that we have, otherwise some modules coming from the delegate
-    // or module provider block, will not be properly instantiated.
+    //...
+
     for (RCTModuleData *moduleData in _moduleDataByID) {
       if (moduleData.hasInstance && (!moduleData.requiresMainQueueSetup || RCTIsMainQueue())) {
-        // Modules that were pre-initialized should ideally be set up before
-        // bridge init has finished, otherwise the caller may try to access the
-        // module directly rather than via `[bridge moduleForClass:]`, which won't
-        // trigger the lazy initialization process. If the module cannot safely be
-        // set up on the current thread, it will instead be async dispatched
-        // to the main thread to be set up in _prepareModulesWithDispatchGroup:.
         (void)[moduleData instance];
       }
     }
-    RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
-
-    // From this point on, RCTDidInitializeModuleNotification notifications will
-    // be sent the first time a module is accessed.
     _moduleSetupComplete = YES;
     [self _prepareModulesWithDispatchGroup:dispatchGroup];
   }
-  //...Profile code
+  //...
 }
 
 - (NSArray<RCTModuleData *> *)registerModulesForClasses:(NSArray<Class> *)moduleClasses
@@ -126,6 +112,11 @@ _RCTCxxBridge.mm_
   NSMutableArray<RCTModuleData *> *moduleDataByID = [NSMutableArray arrayWithCapacity:moduleClasses.count];
   for (Class moduleClass in moduleClasses) {
     NSString *moduleName = RCTBridgeModuleNameForClass(moduleClass);
+    
+    /**
+     * Bob's note:
+     * Don't initialize old JS executor class
+     */
 
     // Don't initialize the old executor in the new bridge.
     // TODO mhorowitz #10487027: after D3175632 lands, we won't need
@@ -134,25 +125,11 @@ _RCTCxxBridge.mm_
       continue;
     }
 
-    // Check for module name collisions
+    //... Check for module name collisions, 
+    //... throw exception if module with specified name already exists
     RCTModuleData *moduleData = _moduleDataByName[moduleName];
-    if (moduleData) {
-      if (moduleData.hasInstance) {
-        // Existing module was preregistered, so it takes precedence
-        continue;
-      } else if ([moduleClass new] == nil) {
-        // The new module returned nil from init, so use the old module
-        continue;
-      } else if ([moduleData.moduleClass new] != nil) {
-        // Both modules were non-nil, so it's unclear which should take precedence
-        RCTLogError(@"Attempted to register RCTBridgeModule class %@ for the "
-                    "name '%@', but name was already registered by class %@",
-                    moduleClass, moduleName, moduleData.moduleClass);
-      }
-    }
 
     // Instantiate moduleData
-    // TODO #13258411: can we defer this until config generation?
     moduleData = [[RCTModuleData alloc] initWithModuleClass:moduleClass bridge:self];
 
     _moduleDataByName[moduleName] = moduleData;
@@ -161,9 +138,115 @@ _RCTCxxBridge.mm_
   }
   [_moduleDataByID addObjectsFromArray:moduleDataByID];
 
-  RCT_PROFILE_END_EVENT(RCTProfileTagAlways, @"");
-
   return moduleDataByID;
+}
+```
+
+Several things happened during this initialization part:
+
+* Collect all registered module classes.
+* Generate registered module names.
+* Create `RCTModuleData` .
+* Create module instance by calling `[RCTModuleData instance]`.
+* Save `RCTModuleData` .
+
+The actual instance of our native module is created in `RCTModuleData`.
+
+_RCTModuleData.mm - creation of native module instance._
+
+```objectivec
+- (instancetype)initWithModuleClass:(Class)moduleClass
+                             bridge:(RCTBridge *)bridge
+{
+  return [self initWithModuleClass:moduleClass
+                    moduleProvider:^id<RCTBridgeModule>{ return [moduleClass new]; }
+                            bridge:bridge];
+}
+- (instancetype)initWithModuleClass:(Class)moduleClass
+                     moduleProvider:(RCTBridgeModuleProvider)moduleProvider
+                             bridge:(RCTBridge *)bridge
+{
+  if (self = [super init]) {
+    _bridge = bridge;
+    _moduleClass = moduleClass;
+    _moduleProvider = [moduleProvider copy];
+    [self setUp];
+  }
+  return self;
+}
+- (id<RCTBridgeModule>)instance
+{
+  if (!_setupComplete) {
+      //...
+      if (_requiresMainQueueSetup) {
+      //...
+
+      RCTUnsafeExecuteOnMainQueueSync(^{
+        [self setUpInstanceAndBridge];
+      });
+    } else {
+      [self setUpInstanceAndBridge];
+    }
+  }
+  return _instance;
+}
+
+- (void)setUpInstanceAndBridge
+{
+  //...
+  {
+    std::unique_lock<std::mutex> lock(_instanceLock);
+
+    if (!_setupComplete && _bridge.valid) {
+      if (!_instance) {
+        //...
+        /**
+         * Bob's note:
+         * Create our native module instance.
+         */
+        _instance = _moduleProvider ? _moduleProvider() : nil;
+        //...
+        //...nil check for instance
+      }
+
+      //...
+
+      // Bridge must be set before methodQueue is set up, as methodQueue
+      // initialization requires it (View Managers get their queue by calling
+      // self.bridge.uiManager.methodQueue)
+      [self setBridgeForInstance];
+    }
+
+    [self setUpMethodQueue];
+  }
+  //...finish setup
+}
+```
+
+Now we have saved our native module instances, let's continue the initialize part of `RCTCxxBridge`.
+
+_RCTCxxBridge.mm_
+
+```objectivec
+- (void)_initializeBridge:(std::shared_ptr<JSExecutorFactory>)executorFactory {
+  //...
+  _reactInstance->initializeBridge(
+      std::make_unique<RCTInstanceCallback>(self),
+      executorFactory,
+      _jsMessageThread,
+      
+      [self _buildModuleRegistry]);
+  //...
+}
+
+- (std::shared_ptr<ModuleRegistry>)_buildModuleRegistry
+{
+  //...
+  auto registry = std::make_shared<ModuleRegistry>(
+         createNativeModules(_moduleDataByID, self, _reactInstance),
+         moduleNotFoundCallback);
+  //...
+  return registry;
 }
 ```
 
