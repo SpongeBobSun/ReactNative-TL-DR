@@ -1,5 +1,7 @@
 ## TL;DR
 
+We will talk about how does a `NativeModule` get initialized.
+
 ## Since you want to read it anyway....
 
 We've mentioned `NativeModule` several times in previous chapters and now is the time we talk about it.
@@ -112,7 +114,7 @@ _RCTCxxBridge.mm_
   NSMutableArray<RCTModuleData *> *moduleDataByID = [NSMutableArray arrayWithCapacity:moduleClasses.count];
   for (Class moduleClass in moduleClasses) {
     NSString *moduleName = RCTBridgeModuleNameForClass(moduleClass);
-    
+
     /**
      * Bob's note:
      * Don't initialize old JS executor class
@@ -223,7 +225,7 @@ _RCTModuleData.mm - creation of native module instance._
 }
 ```
 
-Now we have saved our native module instances, let's continue the initialize part of `RCTCxxBridge`.
+Now we have saved our native module instances \( wrapped by RCTModuleData \) , let's continue the initialize part of `RCTCxxBridge`.
 
 _RCTCxxBridge.mm_
 
@@ -234,7 +236,7 @@ _RCTCxxBridge.mm_
       std::make_unique<RCTInstanceCallback>(self),
       executorFactory,
       _jsMessageThread,
-      
+
       [self _buildModuleRegistry]);
   //...
 }
@@ -250,5 +252,20 @@ _RCTCxxBridge.mm_
 }
 ```
 
+This will build a `ModuleRegistry` with whatever returned by `createNativeModules`. Then `RCTCxxBridge` will use it to initialize 'reactInstance', which will send it all the way down to `JsToNativeBridge`. `JsToNativeBridge` will handle native function calls from JavaScript code.
 
+_NativeToJsBridge.cpp - Class JsToNativeBridge_
+
+```cpp
+void callNativeModules(
+    JSExecutor& executor, folly::dynamic&& calls, bool isEndOfBatch) override {
+  //...
+  for (auto& call : parseMethodCalls(std::move(calls))) {
+    m_registry->callNativeMethod(call.moduleId, call.methodId, std::move(call.arguments), call.callId);
+  }
+  //...
+}
+```
+
+We will talk about how JavaScript calling native methods in next chapter. Now we should assume all native calls from JavaScript will be handled by `JsToNativeBridge`, then it will be dispatched by our `ModuleRegistry` using 'module id' and 'method id'.
 
