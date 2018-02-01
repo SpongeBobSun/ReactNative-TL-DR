@@ -507,7 +507,9 @@ _RCTModuleMethod.mm - invoke method_
 }
 ```
 
-Looks like it's pretty straight forward - get `NSInvocation` for required method and invoke it on module object. But there is one tricky part - `processMethodSignature`. This method will generate `NSInvocation` and parameters which match the selector. I'll not paste source code of it due to it's long and a bit complicated but you can read it yourself if you are interested. 
+Looks like it's pretty straight forward - get `NSInvocation` for required method and invoke it on module object. But there is one tricky part - `processMethodSignature`. This method will generate `NSInvocation` and parameters which match the selector. I'll not paste source code of it due to it's long and a bit complicated but you can read it yourself if you are interested.
 
 One thing to notice is - 'Promise' and 'Reject' callback calls will be throw back to JavaScript code using `[RCTCxxBridge enqueueCallBack]`. This will eventually be handled by our good old `JSCExecutor` using `JSCExecutor::invokeCallback` which using a similar approach as `JSCExecutor::callFunction`.
+
+
 
