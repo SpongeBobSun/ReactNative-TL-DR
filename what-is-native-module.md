@@ -515,3 +515,5 @@ Looks like it's pretty straight forward - get `NSInvocation` for required method
 
 One thing to notice is - 'Promise' and 'Reject' callback calls will be throw back to JavaScript code using `[RCTCxxBridge enqueueCallBack]`. This will eventually be handled by our good old `JSCExecutor` using `JSCExecutor::invokeCallback` which using a similar approach as `JSCExecutor::callFunction`.
 
+That's it. Now we've done with native method initializing and function invoking, we will go through how does JavaScript calling native modules in next chapter.
+
