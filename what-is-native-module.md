@@ -4,15 +4,17 @@ We will talk about how does a `NativeModule` get initialized and how to prepare 
 
 Below chart should cover contents in this chapter.
 
+![](/assets/NativeModules.png)
+
 ## Since you want to read it anyway....
 
 We've mentioned `NativeModule` several times in previous chapters and now is the time we talk about it.
 
 `NativeModule` are modules written in native code as it implies from its name. So `NativeModule` can provide native APIs to JavaScript. There are several native modules shipped with ReactNative such as `UIManager`, `AsyncStorage`. Also you may already written some native modules of your own. If you haven't you can read [this](https://facebook.github.io/react-native/docs/native-modules-ios.html) article for more information.
 
-If you have already using native modules in your project \( or you've read the link above \) you should already know in order to use a Objective-C class as native module you need:
+If you have already using native modules in your project \( or you've read the link above \) you should already know in order to create a Objective-C class as native module you need to:
 
-* Implementing the `RCTBridgeModule` in your class
+* Implementing the `RCTBridgeModule` in your class.
 
 * Include `RCT_EXPORT_MODULE()` macro in your class.
 
