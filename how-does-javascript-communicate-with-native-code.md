@@ -300,11 +300,11 @@ enqueueNativeCall(
   }
 ```
 
-This function will first add informations for a native call \( module id, method id & parameters \) to a 'queue'. When the time is right it will use `global.nativeFlushQueueImmediate` to trigger actual function calls in native. It will also save success & failure callbacks to a global array with current call id. Question is - when does the `nativeFlushQueueImmediate` get triggered? 
+This function will first add informations for a native call \( module id, method id & parameters \) to a 'queue'. When the time is right it will use `global.nativeFlushQueueImmediate` to trigger actual function calls in native. It will also save success & failure callbacks to a global array with current call id. Question is - when does the `nativeFlushQueueImmediate` get triggered?
 
-First condition is this callback has to be exist. That means the native bridges must be initialized properly. 
+First condition is this callback has to be exist. That means the native bridges must be initialized properly.
 
-Then we have a timing check - how long has it  been since the last flush? Is it longer than some throttle we've set \(MIN\_TIME\_BETWEEN\_FLUSHES\_MS = 5ms\)? Or do we still have some pending JavaScript function calls from native? **If the last flush is 5ms ago or we don't have any pending JavaScript calls the native call queue will be flushed. **
+Then we have a timing check - how long has it  been since the last flush? Is it longer than some throttle we've set \(MIN\_TIME\_BETWEEN\_FLUSHES\_MS = 5ms\)? Or do we still have some pending JavaScript function calls from native? **If the last flush is 5ms ago or we don't have any pending JavaScript calls, the native call queue will be flushed. **
 
-The reason why we're checking pending calls is when we finishing calling some JavaScript functions from native, it will flush queue for us. We've mentioned this in previous [chapter](./how-does-native-code-communicate-with-javascript). 
+The reason why we're checking pending calls is when we finishing calling some JavaScript functions from native, it will flush queue for us. We've mentioned this in previous [chapter](./how-does-native-code-communicate-with-javascript).
 
