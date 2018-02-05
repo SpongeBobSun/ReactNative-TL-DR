@@ -250,16 +250,54 @@ There are two ways to call a native method from JavaScript as above code block s
 * global.nativeCallSyncHook
 * BatchedBridge.enqueueNativeCall
 
-`nativeCallSyncHook` is a native call back we injected to JS Context in `JSCExecutor`.
+`nativeCallSyncHook` will be used when you export your module methods using `RCT_EXPORT_BLOCKING_SYNCHRONOUS_METHOD` . This is seldom used and may cause performance problem - your module method will running on the JavaScript thread instead of a separate dispatch queue. We will not discuss more about it but we've learned one thing from it: you can make synchronous native module methods. This may come handy some day but use it carefully.
 
-_JSCExecutor.cpp_
+A more common and recommended way to export module methods is using `RCT_EXPORT_METHOD`. This will lead us to the second way of calling native methods from JavaScript: `enqueueNativeCall`.
 
-```
-void JSCExecutor::initOnJSVMThread() throw(JSException) {
-  //...
-  installNativeHook<&JSCExecutor::nativeCallSyncHook>("nativeCallSyncHook");
-  //...
-}
+_MessageQueue.js_
+
+```js
+enqueueNativeCall(
+    moduleID: number,
+    methodID: number,
+    params: any[],
+    onFail: ?Function,
+    onSucc: ?Function,
+  ) {
+    if (onFail || onSucc) {
+      //...debug code
+      // Encode callIDs into pairs of callback identifiers by shifting left and using the rightmost bit
+      // to indicate fail (0) or success (1)
+      // eslint-disable-next-line no-bitwise
+      onFail && params.push(this._callID << 1);
+      // eslint-disable-next-line no-bitwise
+      onSucc && params.push((this._callID << 1) | 1);
+      this._successCallbacks[this._callID] = onSucc;
+      this._failureCallbacks[this._callID] = onFail;
+    }
+
+    //...debug code
+    this._callID++;
+
+    this._queue[MODULE_IDS].push(moduleID);
+    this._queue[METHOD_IDS].push(methodID);
+
+    //...debug code
+    this._queue[PARAMS].push(params);
+
+    const now = new Date().getTime();
+    if (
+      global.nativeFlushQueueImmediate &&
+      (now - this._lastFlush >= MIN_TIME_BETWEEN_FLUSHES_MS ||
+        this._inCall === 0)
+    ) {
+      var queue = this._queue;
+      this._queue = [[], [], [], this._callID];
+      this._lastFlush = now;
+      global.nativeFlushQueueImmediate(queue);
+    }
+    //...debug & spy code
+  }
 ```
 
 
