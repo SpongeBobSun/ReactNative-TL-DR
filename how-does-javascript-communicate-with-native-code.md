@@ -22,6 +22,10 @@ JSCExecutor::JSCExecutor(std::shared_ptr<ExecutorDelegate> delegate,
 
     {
       //...
+      /**
+       * Bob's note:
+       * Create & inject an object to JS Context
+       */
       installGlobalProxy(m_context, "nativeModuleProxy",
                          exceptionWrapMethod<&JSCExecutor::getNativeModule>());
     }
@@ -31,6 +35,10 @@ JSCExecutor::JSCExecutor(std::shared_ptr<ExecutorDelegate> delegate,
 
 void JSCExecutor::initOnJSVMThread() throw(JSException) {
   //...
+  /**
+   * Bob's note:
+   * Inject two callbacks in JS Context
+   */
   installNativeHook<&JSCExecutor::nativeFlushQueueImmediate>("nativeFlushQueueImmediate");
   installNativeHook<&JSCExecutor::nativeCallSyncHook>("nativeCallSyncHook");
   //...
