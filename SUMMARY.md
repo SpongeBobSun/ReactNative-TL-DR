@@ -7,6 +7,5 @@
 * [What is a native module](what-is-native-module.md)
 * [How does native method get called in JavaScript](how-does-javascript-communicate-with-native-code.md)
 * [How does it start in Javascript](how-does-it-start-in-javascript.md)
-* [How does ReactNative use JavascriptCore](how-does-javascriptcore-get-used.md)
 * [Todos](todos.md)
 
