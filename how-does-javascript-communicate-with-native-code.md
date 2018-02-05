@@ -337,17 +337,22 @@ class JsToNativeBridge : public react::ExecutorDelegate {
   //...
   void callNativeModules(
       JSExecutor& executor, folly::dynamic&& calls, bool isEndOfBatch) override {
-
-    CHECK(m_registry || calls.empty()) <<
-      "native module calls cannot be completed with no native modules";
-    m_batchHadNativeModuleCalls = m_batchHadNativeModuleCalls || !calls.empty();
+    //...empty check
 
     // An exception anywhere in here stops processing of the batch.  This
     // was the behavior of the Android bridge, and since exception handling
     // terminates the whole bridge, there's not much point in continuing.
     for (auto& call : parseMethodCalls(std::move(calls))) {
-      m_registry->callNativeMethod(call.moduleId, call.methodId, std::move(call.arguments), call.callId);
+      m_registry->callNativeMethod(
+        call.moduleId, 
+        call.methodId, 
+        std::move(call.arguments), 
+        call.callId);
     }
+    /**
+     * Bob's note:
+     * Notify native module class a batch is complete
+     */
     if (isEndOfBatch) {
       // onBatchComplete will be called on the native (module) queue, but
       // decrementPendingJSCalls will be called sync. Be aware that the bridge may still
@@ -361,6 +366,10 @@ class JsToNativeBridge : public react::ExecutorDelegate {
   }
 }
 ```
+
+Native code will use 'module id', 'method id' to locate function required by JavaScript. Then it will invoke it through `ModuleRegistry`  with function arguments. We've discussed how exported methods are invoked in previous chapter.
+
+ The reason why we need call id from JavaScript here is we need when dispatching promise callbacks. We've saved call id and callback mapping in JavaScript code. So when native function is done we could use the call id to find corresponding callbacks for current call.
 
 
 
