@@ -308,3 +308,59 @@ Then we have a timing check - how long has it  been since the last flush? Is it 
 
 The reason why we're checking pending calls is when we finishing calling some JavaScript functions from native, it will flush queue for us. We've mentioned this in previous [chapter](./how-does-native-code-communicate-with-javascript).
 
+So let's go back to native code.
+
+_JSCExecutor.cpp_
+
+```cpp
+JSValueRef JSCExecutor::nativeFlushQueueImmediate(
+                                                  size_t argumentCount,
+                                                  const JSValueRef arguments[]) {
+  if (argumentCount != 1) {
+    throw std::invalid_argument("Got wrong number of args");
+  }
+
+  flushQueueImmediate(Value(m_context, arguments[0]));
+  return Value::makeUndefined(m_context);
+}
+
+void JSCExecutor::flushQueueImmediate(Value&& queue) {
+  auto queueStr = queue.toJSONString();
+  m_delegate->callNativeModules(*this, folly::parseJson(queueStr), false);
+}
+```
+
+_NativeToJsBridge.cpp_
+
+```cpp
+class JsToNativeBridge : public react::ExecutorDelegate {
+  //...
+  void callNativeModules(
+      JSExecutor& executor, folly::dynamic&& calls, bool isEndOfBatch) override {
+
+    CHECK(m_registry || calls.empty()) <<
+      "native module calls cannot be completed with no native modules";
+    m_batchHadNativeModuleCalls = m_batchHadNativeModuleCalls || !calls.empty();
+
+    // An exception anywhere in here stops processing of the batch.  This
+    // was the behavior of the Android bridge, and since exception handling
+    // terminates the whole bridge, there's not much point in continuing.
+    for (auto& call : parseMethodCalls(std::move(calls))) {
+      m_registry->callNativeMethod(call.moduleId, call.methodId, std::move(call.arguments), call.callId);
+    }
+    if (isEndOfBatch) {
+      // onBatchComplete will be called on the native (module) queue, but
+      // decrementPendingJSCalls will be called sync. Be aware that the bridge may still
+      // be processing native calls when the birdge idle signaler fires.
+      if (m_batchHadNativeModuleCalls) {
+        m_callback->onBatchComplete();
+        m_batchHadNativeModuleCalls = false;
+      }
+      m_callback->decrementPendingJSCalls();
+    }
+  }
+}
+```
+
+
+
