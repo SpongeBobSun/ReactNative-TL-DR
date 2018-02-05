@@ -306,5 +306,5 @@ First condition is this callback has to be exist. That means the native bridges 
 
 Then we have a timing check - how long has it  been since the last flush? Is it longer than some throttle we've set \(MIN\_TIME\_BETWEEN\_FLUSHES\_MS = 5ms\)? Or do we still have some pending JavaScript function calls from native? **If the last flush is 5ms ago or we don't have any pending JavaScript calls the native call queue will be flushed. **
 
-The reason why we're checking pending calls is when we finishing calling some JavaScript functions from native, it will flush queue for us. We've mentioned this in previous chapter 
+The reason why we're checking pending calls is when we finishing calling some JavaScript functions from native, it will flush queue for us. We've mentioned this in previous [chapter](./how-does-native-code-communicate-with-javascript). 
 
