@@ -29,6 +29,13 @@ JSCExecutor::JSCExecutor(std::shared_ptr<ExecutorDelegate> delegate,
   //...
 }
 
+void JSCExecutor::initOnJSVMThread() throw(JSException) {
+  //...
+  installNativeHook<&JSCExecutor::nativeFlushQueueImmediate>("nativeFlushQueueImmediate");
+  installNativeHook<&JSCExecutor::nativeCallSyncHook>("nativeCallSyncHook");
+  //...
+}
+
 JSValueRef JSCExecutor::getNativeModule(JSObjectRef object, JSStringRef propertyName) {
   if (JSC_JSStringIsEqualToUTF8CString(m_context, propertyName, "name")) {
     return Value(m_context, String(m_context, "NativeModules"));
@@ -60,9 +67,14 @@ void installGlobalProxy(
 }
 ```
 
-During the initialization we've created a JavaScript object and injected it to `JSContext`. Also we've replaced this object's getters to our native implementation which will return a "NativeModule" object from 'm\_nativeModules'. Those native modules are created during `RCTCxxBridge` initialization as we discussed in last chapter.
+During the initialization we've created a JavaScript object and injected it to `JSContext`. Then we've replaced this object's getters to our native implementation which will return a "NativeModule" object from 'm\_nativeModules'. Those native modules are created during `RCTCxxBridge` initialization as we discussed in last chapter.
 
-The `NativeModuleProxy` we just injected in JSContext will provide native module access to JavaScript and will be held in 'NativeModule.js'
+Also, there are two native callbacks injected to JS Context as well.
+
+* `nativeFlushQueueImmediate`  will execute batched native calls
+* `nativeCallSyncHook` will call native methods synchronously. 
+
+Those are important callbacks in this chapter but we will discuss it later. First we will focus on `NativeModuleProxy` , which will provide native modules to JavaScript and will be held in 'NativeModule.js'
 
 _NativeModule.js_
 
@@ -225,7 +237,7 @@ function genMethod(moduleID: number, methodID: number, type: MethodType) {
 }
 ```
 
-There are two ways to call a native method from JavaScript as above code block shows us. 
+There are two ways to call a native method from JavaScript as above code block shows us.
 
 * global.nativeCallSyncHook
 * BatchedBridge.enqueueNativeCall
