@@ -94,7 +94,7 @@ if (global.nativeModuleProxy) {
   const bridgeConfig = global.__fbBatchedBridgeConfig;
   /**
    * Bob's note:
-   * This '__fbBAtchedBridgeCOnfig' will only be set in 'RCTObjcExecutor',
+   * This '__fbBAtchedBridgeConfig' will only be set in 'RCTObjcExecutor',
    * which is only used in debug mode.
    */
    //...code to generate native module
@@ -369,7 +369,5 @@ class JsToNativeBridge : public react::ExecutorDelegate {
 
 Native code will use 'module id', 'method id' to locate function required by JavaScript. Then it will invoke it through `ModuleRegistry`  with function arguments. We've discussed how exported methods are invoked in previous chapter.
 
- The reason why we need call id from JavaScript here is we need when dispatching promise callbacks. We've saved call id and callback mapping in JavaScript code. So when native function is done we could use the call id to find corresponding callbacks for current call.
-
-
+The reason why we need call id from JavaScript here is we need when dispatching promise callbacks. We've saved call id and callback mapping in JavaScript code. So when native function is done we could use the call id to find corresponding callbacks for current call.
 
