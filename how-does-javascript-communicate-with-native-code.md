@@ -367,7 +367,9 @@ class JsToNativeBridge : public react::ExecutorDelegate {
 }
 ```
 
-Native code will use 'module id', 'method id' to locate function required by JavaScript. Then it will invoke it through `ModuleRegistry`  with function arguments. We've discussed how exported methods are invoked in previous chapter.
+Native code will use 'module id', 'method id' to locate function required by JavaScript. Then it will invoke it through `ModuleRegistry`  with function arguments as we've discussed how exported methods are invoked in previous chapter.
 
 The reason why we need call id from JavaScript here is we need when dispatching promise callbacks. We've saved call id and callback mapping in JavaScript code. So when native function is done we could use the call id to find corresponding callbacks for current call.
+
+That's it. Now we've done with how native modules are created and invoked from JavaScript. Since we've know how JavaScript and native communicate with each other, we will find out how ReactNative start in JavaScript in next chapter.
 
