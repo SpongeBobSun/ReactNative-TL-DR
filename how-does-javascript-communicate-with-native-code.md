@@ -1,6 +1,6 @@
 ## TL;DR
 
-We will talk about how native methods get called from JavaScript in this chapter.
+We will talk about how native methods get called from JavaScript in this chapter. Contents in this chapter could be covered in below figure.![](/assets/JsToNative.png)
 
 ## Since you want to read it anyway...
 
