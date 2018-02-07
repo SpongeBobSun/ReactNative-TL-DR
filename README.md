@@ -6,7 +6,7 @@ I'll write down the important part and bread crumbs about how `ReactNative` work
 
 The reason why this document is called 'Too Long Don't Read' is I will summarize contents in a chapter to a figure or a bullet list. Then I'll put it on the beginning of each chapter entitled `TL;DR`.
 
-<img src='/assets/tldr.png' width='100%'>
+<div style="background: url('/assets/tldr.png');width:100%;  height: 500px;"></div>
 
 
 The `TL;DR` part will provide a quick reference if you want to go through chapters quickly.
