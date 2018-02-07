@@ -37,8 +37,6 @@ Lots of code will be pasted in this document. Some important conventions is abou
 
 * Line comments start with '...' is written by me.
 
-For example:
-
 > //...Some important thing is going to happen in below block
 
 * Block comments contains 'Bob's note:' is written by me.
