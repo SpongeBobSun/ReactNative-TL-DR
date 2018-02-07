@@ -33,13 +33,30 @@ Then it's other parts that matters in `ReactNative` such as `UIManager` , render
 
 ## Conventions.
 
+Lots of code will be pasted in this document. Some important conventions is about comments - so you won't mix my comments and original comments.
 
+* Line comments start with '...' is written by me.
+
+For example:
+
+> //...Some important thing is going to happen in below block
+
+* Block comments contains 'Bob's note:' is written by me.
+
+```
+/**
+ * Bob's note:
+ * Dispatch some task in some queue
+ */
+```
+
+* Line comment start with '...' and without any explanations means I've delete some code to make code block more clear for reading.
+
+> //...
 
 ## Status of this document.
 
 ### **This document is still working in progress!**
 
- See chapter `Todos` for status.
-
-
+See chapter `Todos` for status.
 
