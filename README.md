@@ -8,9 +8,9 @@ The reason why this document is called 'Too Long Don't Read' is I will summarize
 
 ![](/assets/tldr.png)
 
+The `TL;DR` part will provide a quick reference if you want to go through chapters quickly. 
 
-
-
+## 
 
 ## Who this document is for.
 
