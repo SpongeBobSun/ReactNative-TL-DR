@@ -8,11 +8,14 @@ The reason why this document is called 'Too Long Don't Read' is I will summarize
 
 ![](/assets/tldr.png)
 
-The `TL;DR` part will provide a quick reference if you want to go through chapters quickly. 
-
-## 
+The `TL;DR` part will provide a quick reference if you want to go through chapters quickly.
 
 ## Who this document is for.
+
+This document is for those who already played with `ReactNative`, or made their own app using `ReactNative`  and are curious about:
+
+* How does ReactNative work?
+* What's under the hood?
 
 ## Who this document is not for.
 
