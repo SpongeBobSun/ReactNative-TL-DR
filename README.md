@@ -17,7 +17,13 @@ This document is for those who already played with `ReactNative`, or made their 
 * How does ReactNative work?
 * What's under the hood?
 
+Also this document is based on `ReactNative` version '0.52.0' and **iOS **platform. Although some code written in cpp are used by both iOS and Android but I will **not **go through any Java code.
+
 ## Who this document is not for.
+
+If you are a Android developer and wish to read about plenty Java code in `ReactNative` - this is not for you, **currently**. I've planed to add Android part in this document but I will focus on iOS for now.
+
+If you want to learn how to make apps using `ReactNative` - this is not your cup of tea. I'll assume readers have a solid \( well not that solid maybe \) background of using `ReactNative` to make apps.
 
 ## How this document is organized.
 
