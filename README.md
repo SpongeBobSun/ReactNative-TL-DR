@@ -29,9 +29,17 @@ If you want to learn how to make apps using `ReactNative` - this is not your cup
 
 This document will start with how `ReactNative` initializing itself \( like other lousy documents for some frameworks \). Then it will go through the communication part between JavaScript code and native code. Also `NativeModule` will be introduced during this.
 
-Then it's other parts that matters in `ReactNative` such as `UIManager` 
+Then it's other parts that matters in `ReactNative` such as `UIManager` , renderer etc.
 
 ## Conventions.
+
+
+
+## Status of this document.
+
+### **This document is still working in progress!**
+
+ See chapter `Todos` for status.
 
 
 
