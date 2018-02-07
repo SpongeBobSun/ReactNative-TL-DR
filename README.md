@@ -14,7 +14,7 @@ The `TL;DR` part will provide a quick reference if you want to go through chapte
 
 This document is for those who already played with `ReactNative`, or made their own app using `ReactNative`  and are curious about:
 
-* How does ReactNative work?
+* How does this part of `ReactNative` works?
 * What's under the hood?
 
 Also this document is based on `ReactNative` version '0.52.0' and **iOS **platform. Although some code written in cpp are used by both iOS and Android but I will **not **go through any Java code.
@@ -26,6 +26,10 @@ If you are a Android developer and wish to read about plenty Java code in `React
 If you want to learn how to make apps using `ReactNative` - this is not your cup of tea. I'll assume readers have a solid \( well not that solid maybe \) background of using `ReactNative` to make apps.
 
 ## How this document is organized.
+
+This document will start with how `ReactNative` initializing itself \( like other lousy documents for some frameworks \). Then it will go through the communication part between JavaScript code and native code. Also `NativeModule` will be introduced during this.
+
+Then it's other parts that matters in `ReactNative` such as `UIManager` 
 
 ## Conventions.
 
