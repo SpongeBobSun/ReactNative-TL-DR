@@ -1,12 +1,19 @@
+* [x] Initialization in 
+
+  * [x] Native
+
+  * [x] JavaScript
+
 * [x] Native module
 
 * [x] JS & native communication
 
+* [ ] UIManager
+* [ ] Event handling
 
-
-* [ ] Native UI component
 * [ ] React Native renderer
-* [ ] Inject native code as JavaScript callback
+
+* [ ] Example of inject native code as JavaScript callback - showing how JavaScriptCore is used
 
 
 
